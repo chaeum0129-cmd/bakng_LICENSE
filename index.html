@@ -295,8 +295,8 @@
 
 <script>
 /* ===== 학원 설정 (여기 두 줄만 바꿔 쓰세요) ===== */
-const ACCESS_PASSWORD = "03180772432";   // 접속 비밀번호
-const GAS_URL = "https://script.google.com/macros/s/AKfycbwtzzCTyDQK7SoGuJEzL8tkBf3Ft304Znk63vrzkp1p8opYVjuRlKdpPppKfbZI71pO/exec";     // 구글 시트 연동 주소 (Apps Script 배포 URL). 비워두면 기록 안 함.
+const ACCESS_PASSWORD = "bakery2026";   // 접속 비밀번호
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwtzzCTyDQK7SoGuJEzL8tkBf3Ft304Znk63vrzkp1p8opYVjuRlKdpPppKfbZI71pO/exec";                      // 구글 시트 연동 주소 (Apps Script 배포 URL). 비워두면 기록 안 함.
 
 /* ===== 과목 구성 ===== */
 const SUBJECTS = {
@@ -729,6 +729,7 @@ function startExam(){
   logAccess(name,phone,examType);
   document.getElementById('home').classList.add('hidden');
   document.getElementById('exam').classList.remove('hidden');
+  pushScreen();
   buildGrid();renderQ();
   if(useTimer) startTimer(); else document.getElementById('timer').textContent='∞';
 }
@@ -815,6 +816,7 @@ function setReview(all){state.reviewAll=all;renderReview();window.scrollTo({top:
 function showCheck(){
   ['home'].forEach(id=>document.getElementById(id).classList.add('hidden'));
   document.getElementById('check').classList.remove('hidden');
+  pushScreen();
   const body=document.getElementById('checkBody');body.innerHTML='';const nums=['①','②','③','④'];
   let n=0;
   Object.keys(BANK).forEach(sub=>{
@@ -829,12 +831,14 @@ function showCheck(){
     });
   });
 }
-function goHome(){if(timerInt)clearInterval(timerInt);['exam','result','review','check','study','practical'].forEach(id=>document.getElementById(id).classList.add('hidden'));document.getElementById('home').classList.remove('hidden');document.querySelectorAll('.examcard').forEach(c=>c.classList.remove('sel'));state=null;}
+function doGoHome(){if(timerInt)clearInterval(timerInt);['exam','result','review','check','study','practical'].forEach(id=>document.getElementById(id).classList.add('hidden'));document.getElementById('home').classList.remove('hidden');document.querySelectorAll('.examcard').forEach(c=>c.classList.remove('sel'));state=null;}
+function goHome(){ if(history.state&&history.state.inapp){ history.back(); } else { doGoHome(); } }
 
 /* ===== 요점정리(학습) ===== */
 function showStudy(){
   ['home'].forEach(id=>document.getElementById(id).classList.add('hidden'));
   document.getElementById('study').classList.remove('hidden');
+  pushScreen();
   setStudy(studyExam);
 }
 function setStudy(exam){
@@ -857,6 +861,7 @@ function enterApp(){
   if(v===ACCESS_PASSWORD){
     document.getElementById('gate').classList.add('hidden');
     document.getElementById('home').classList.remove('hidden');
+    try{ history.replaceState({base:true},''); }catch(e){}
   }else{
     alert('비밀번호가 올바르지 않습니다.');
     document.getElementById('inAccess').value='';
@@ -881,6 +886,7 @@ function printStudy(){ window.print(); }
 function showPractical(){
   ['home'].forEach(id=>document.getElementById(id).classList.add('hidden'));
   document.getElementById('practical').classList.remove('hidden');
+  pushScreen();
   setPractical(practicalExam);
 }
 function setPractical(exam){
@@ -922,6 +928,22 @@ async function bumpVisits(){
   if(el) el.textContent=(count===null?'-':count.toLocaleString());
 }
 window.addEventListener('load',bumpVisits);
+
+/* ===== 뒤로가기(브라우저/휴대폰) 처리 ===== */
+function pushScreen(){ try{ history.pushState({inapp:true},''); }catch(e){} }
+window.addEventListener('popstate',function(){
+  const vis=id=>!document.getElementById(id).classList.contains('hidden');
+  if(vis('exam')){
+    if(confirm('시험을 나가시겠어요? 지금까지 푼 답안은 저장되지 않습니다.')){
+      doGoHome();
+    }else{
+      pushScreen(); // 머무름: 뒤로가기를 다시 가둠
+    }
+  }else if(vis('study')||vis('practical')||vis('check')||vis('result')||vis('review')){
+    doGoHome();
+  }
+  // 홈/비밀번호 화면에서는 그대로 사이트를 빠져나감
+});
 </script>
 </body>
 </html>
