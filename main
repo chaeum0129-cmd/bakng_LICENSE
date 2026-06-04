@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>제과·제빵기능사 CBT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@400;500;700;800&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f4ece0;--paper2:#efe5d6;--ink:#2b2118;--ink-soft:#6a5c4c;--line:#d8cbb6;
+    --accent:#b8542f;--accent-dark:#8f3e1f;--gold:#c9962e;--ok:#3c7a4e;--bad:#b23b2e;
+    --card:#fffaf2;--shadow:0 10px 30px rgba(60,40,20,.12);--radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{font-family:'IBM Plex Sans KR',sans-serif;
+    background:radial-gradient(1200px 600px at 80% -10%,rgba(201,150,46,.10),transparent 60%),
+      radial-gradient(900px 500px at -10% 110%,rgba(184,84,47,.08),transparent 60%),var(--paper);
+    color:var(--ink);min-height:100vh;line-height:1.6;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:860px;margin:0 auto;padding:24px 18px 80px;}
+  .serif{font-family:'Gothic A1',sans-serif;font-weight:700;letter-spacing:-.01em;}
+  .hidden{display:none !important;}
+  .brand{text-align:center;padding:34px 0 8px;}
+  .brand .kicker{letter-spacing:.32em;font-size:12px;color:var(--accent);font-weight:600;}
+  .brand h1{font-family:'Gothic A1',sans-serif;font-weight:800;font-size:40px;margin:8px 0 6px;line-height:1.2;}
+  .brand p{color:var(--ink-soft);margin:0;font-size:15px;}
+  .rule{height:1px;background:linear-gradient(90deg,transparent,var(--line),transparent);margin:22px 0;}
+  .pick{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;}
+  .examcard{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:20px;cursor:pointer;transition:.18s;position:relative;overflow:hidden;}
+  .examcard:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:var(--accent);}
+  .examcard.sel{border-color:var(--accent);box-shadow:var(--shadow);}
+  .examcard.sel:after{content:"선택됨";position:absolute;top:10px;right:10px;background:var(--accent);color:#fff;font-size:11px;padding:3px 9px;border-radius:20px;}
+  .examcard.soon{opacity:.6;}
+  .examcard.soon:after{content:"준비 중";position:absolute;top:10px;right:10px;background:var(--ink-soft);color:#fff;font-size:11px;padding:3px 9px;border-radius:20px;}
+  .examcard .ic{font-size:30px;}
+  .examcard h3{font-family:'Gothic A1',sans-serif;font-size:22px;margin:6px 0 2px;}
+  .examcard small{color:var(--ink-soft);}
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:13px;font-weight:600;color:var(--ink-soft);margin-bottom:6px;}
+  .field input{width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:10px;
+    background:var(--card);font-family:inherit;font-size:16px;color:var(--ink);}
+  .field input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(184,84,47,.12);}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .opts{display:flex;gap:18px;flex-wrap:wrap;margin:4px 0 18px;font-size:14px;color:var(--ink-soft);}
+  .opts label{display:flex;align-items:center;gap:7px;cursor:pointer;}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--accent);
+    color:#fff;border:none;border-radius:11px;padding:15px 22px;font-family:inherit;font-size:16px;
+    font-weight:600;cursor:pointer;width:100%;transition:.15s;}
+  .btn:hover{background:var(--accent-dark);}
+  .btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent);}
+  .btn.ghost:hover{background:rgba(184,84,47,.07);}
+  .btn.gray{background:#e6dccb;color:var(--ink);}
+  .btn.gray:hover{background:#dccfb8;}
+  .btn.sm{width:auto;padding:10px 16px;font-size:14px;}
+  .info{background:var(--paper2);border:1px dashed var(--line);border-radius:12px;padding:14px 16px;font-size:13px;color:var(--ink-soft);margin-top:16px;}
+  .info b{color:var(--ink);}
+  .topbar{position:sticky;top:0;z-index:20;background:rgba(244,236,224,.92);backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line);padding:12px 0;margin-bottom:18px;}
+  .topbar .inner{max-width:860px;margin:0 auto;padding:0 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+  .timer{font-family:'Gothic A1',sans-serif;font-size:22px;font-variant-numeric:tabular-nums;}
+  .timer.warn{color:var(--bad);}
+  .progresswrap{flex:1;}
+  .progresswrap .bar{height:7px;background:var(--paper2);border-radius:20px;overflow:hidden;border:1px solid var(--line);}
+  .progresswrap .bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--gold));width:0;transition:.3s;}
+  .progresswrap .lab{font-size:12px;color:var(--ink-soft);margin-top:4px;}
+  .qcard{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);}
+  .qmeta{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+  .tag{font-size:12px;font-weight:600;background:var(--paper2);color:var(--accent);padding:4px 11px;border-radius:20px;border:1px solid var(--line);}
+  .qno{font-family:'Gothic A1',sans-serif;font-size:18px;color:var(--ink-soft);}
+  .qtext{font-size:19px;font-weight:500;margin:6px 0 20px;line-height:1.55;}
+  .choice{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;background:var(--paper);
+    border:1px solid var(--line);border-radius:11px;padding:14px 16px;margin-bottom:10px;cursor:pointer;
+    font-family:inherit;font-size:16px;color:var(--ink);transition:.13s;}
+  .choice:hover{border-color:var(--accent);background:#fff;}
+  .choice.sel{border-color:var(--accent);background:rgba(184,84,47,.08);box-shadow:0 0 0 2px rgba(184,84,47,.18) inset;}
+  .choice .num{font-family:'Gothic A1',sans-serif;font-size:16px;width:26px;height:26px;flex:none;border-radius:50%;
+    background:var(--paper2);display:flex;align-items:center;justify-content:center;border:1px solid var(--line);}
+  .choice.sel .num{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .navrow{display:flex;gap:10px;margin-top:18px;}
+  .navrow .btn{flex:1;}
+  .toolrow{display:flex;align-items:center;justify-content:space-between;margin-top:14px;gap:10px;flex-wrap:wrap;}
+  .mark{font-size:13px;color:var(--ink-soft);display:flex;align-items:center;gap:7px;cursor:pointer;}
+  .mark input{width:16px;height:16px;accent-color:var(--gold);}
+  .grid{display:grid;grid-template-columns:repeat(10,1fr);gap:7px;margin-top:18px;}
+  .grid button{aspect-ratio:1;border:1px solid var(--line);background:var(--card);border-radius:8px;
+    font-family:inherit;font-size:13px;cursor:pointer;color:var(--ink-soft);position:relative;}
+  .grid button.done{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .grid button.cur{outline:2px solid var(--ink);outline-offset:1px;}
+  .grid button.flag:after{content:"";position:absolute;top:3px;right:3px;width:6px;height:6px;background:var(--gold);border-radius:50%;}
+  .legend{display:flex;gap:16px;font-size:12px;color:var(--ink-soft);margin-top:10px;flex-wrap:wrap;}
+  .legend span{display:flex;align-items:center;gap:6px;}
+  .dot{width:11px;height:11px;border-radius:3px;display:inline-block;}
+  .result-hero{text-align:center;padding:18px 0 6px;}
+  .stamp{display:inline-block;font-family:'Gothic A1',sans-serif;font-size:30px;padding:14px 34px;border:3px solid;border-radius:14px;transform:rotate(-3deg);margin-bottom:8px;}
+  .stamp.pass{color:var(--ok);border-color:var(--ok);}
+  .stamp.fail{color:var(--bad);border-color:var(--bad);}
+  .bigscore{font-family:'Gothic A1',sans-serif;font-size:54px;line-height:1;margin:8px 0;}
+  .bigscore small{font-size:20px;color:var(--ink-soft);}
+  .subtable{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;margin:18px 0;}
+  .subrow{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;border-bottom:1px solid var(--line);}
+  .subrow:last-child{border-bottom:none;}
+  .subrow .nm{font-weight:500;}
+  .subrow .sc{font-variant-numeric:tabular-nums;color:var(--ink-soft);}
+  .minibar{height:6px;background:var(--paper2);border-radius:10px;width:120px;overflow:hidden;}
+  .minibar i{display:block;height:100%;background:var(--accent);}
+  .rev{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:12px;}
+  .rev .q{font-weight:500;margin-bottom:12px;}
+  .rev .c{padding:9px 13px;border-radius:9px;margin-bottom:7px;border:1px solid var(--line);font-size:15px;display:flex;gap:9px;align-items:flex-start;}
+  .rev .c.correct{background:rgba(60,122,78,.1);border-color:var(--ok);}
+  .rev .c.wrong{background:rgba(178,59,46,.1);border-color:var(--bad);}
+  .rev .c .badge{font-size:11px;font-weight:700;margin-left:auto;white-space:nowrap;}
+  .rev .ex{font-size:14px;color:var(--ink-soft);margin-top:8px;padding-top:10px;border-top:1px dashed var(--line);}
+  .subhead{font-family:'Gothic A1',sans-serif;font-weight:700;font-size:20px;margin:22px 0 10px;color:var(--accent-dark);border-bottom:2px solid var(--line);padding-bottom:6px;}
+  .center{text-align:center;}
+  .mt{margin-top:16px;}
+  .small{font-size:13px;color:var(--ink-soft);}
+  .tabs{display:flex;gap:8px;margin-bottom:16px;}
+  .tab{flex:1;padding:12px;border:1px solid var(--line);background:var(--card);border-radius:11px;
+    font-family:inherit;font-size:15px;font-weight:600;color:var(--ink-soft);cursor:pointer;transition:.13s;}
+  .tab.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .studycard{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:6px 20px 16px;margin-bottom:14px;}
+  .studycard ul{list-style:none;padding:0;margin:0;}
+  .studycard li{padding:9px 0;border-bottom:1px solid var(--paper2);font-size:15px;line-height:1.55;}
+  .studycard li:last-child{border-bottom:none;}
+  .studycard li b{color:var(--accent-dark);display:block;}
+  .studycard li .d{display:block;font-size:13.5px;color:var(--ink-soft);margin-top:3px;line-height:1.5;}
+  .pscroll{overflow-x:auto;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;}
+  .ptable{width:100%;border-collapse:collapse;font-size:14.5px;background:var(--card);min-width:640px;}
+  .ptable th,.ptable td{padding:10px 12px;text-align:center;border-bottom:1px solid var(--line);vertical-align:middle;line-height:1.5;}
+  .ptable th{background:var(--paper2);font-weight:600;color:var(--accent-dark);white-space:nowrap;font-size:14px;}
+  .ptable td.nm{font-weight:600;color:var(--accent-dark);white-space:nowrap;font-size:15px;}
+  .ptable td.tip{color:var(--ink-soft);min-width:220px;font-size:13.5px;text-align:left;}
+  .ptable tr:last-child td{border-bottom:none;}
+  @media(max-width:560px){.pick{grid-template-columns:1fr;}.grid{grid-template-columns:repeat(8,1fr);}.brand h1{font-size:32px;}}
+  @media print{
+    body{background:#fff;color:#000;}
+    .btn,.tabs,.brand p,.brand .kicker,.rule{display:none !important;}
+    .studycard{box-shadow:none;border:1px solid #ccc;break-inside:avoid;}
+    .subhead{color:#000;border-color:#999;}
+    .studycard li b{color:#000;}
+    .studycard li .d{color:#333;}
+    .brand h1{font-size:24px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- GATE (접속 비밀번호) -->
+  <section id="gate">
+    <div class="brand" style="padding-top:60px">
+      <div class="kicker">CONFECTIONERY · BAKING LICENSE</div>
+      <h1>제과 · 제빵기능사 CBT</h1>
+      <p>🔒 학원 수강생·선생님 전용</p>
+    </div>
+    <div class="rule"></div>
+    <div class="field"><label>접속 비밀번호</label>
+      <input id="inAccess" type="password" placeholder="비밀번호를 입력하세요" autocomplete="off"
+        onkeydown="if(event.key==='Enter')enterApp()"></div>
+    <button class="btn" onclick="enterApp()">입장하기</button>
+    <div class="info">비밀번호는 학원에서 안내받으세요.</div>
+    <div class="center small" style="margin-top:18px;color:var(--ink-soft)">
+      👣 누적 방문 <b id="visitCount" style="color:var(--accent-dark)">-</b>회
+    </div>
+  </section>
+
+  <!-- HOME -->
+  <section id="home" class="hidden">
+    <div class="brand">
+      <div class="kicker">CONFECTIONERY · BAKING LICENSE</div>
+      <h1>제과 · 제빵기능사 CBT</h1>
+      <p>실전 필기 모의시험 · 60문항 / 60분 · 60점(36문항) 이상 합격</p>
+    </div>
+    <div class="rule"></div>
+    <div class="pick">
+      <div class="examcard" data-exam="제과기능사" onclick="selectExam(this,'제과기능사')">
+        <div class="ic">🍰</div><h3>제과기능사</h3>
+        <small>제과이론·재료과학·영양학·식품위생학·제과제조작업</small>
+      </div>
+      <div class="examcard" data-exam="제빵기능사" onclick="selectExam(this,'제빵기능사')">
+        <div class="ic">🍞</div><h3>제빵기능사</h3>
+        <small>제빵이론·재료과학·영양학·식품위생학·생산작업준비</small>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>이름</label><input id="inName" placeholder="홍길동" autocomplete="off"></div>
+      <div class="field"><label>휴대폰 뒷 4자리</label>
+        <input id="inPhone" placeholder="예: 1234" inputmode="numeric" maxlength="4" autocomplete="off"></div>
+    </div>
+    <div class="opts">
+      <label><input type="checkbox" id="optShuffleQ" checked> 문제 순서 섞기</label>
+      <label><input type="checkbox" id="optShuffleC" checked> 보기 순서 섞기</label>
+      <label><input type="checkbox" id="optTimer" checked> 제한시간 사용(60분)</label>
+    </div>
+    <button class="btn" onclick="startExam()">시험 시작하기</button>
+    <button class="btn ghost mt" onclick="showStudy()">📖 요점정리 (학습)</button>
+    <button class="btn ghost mt" onclick="showPractical()">🧑‍🍳 실기 요약 (제품별)</button>
+    <button class="btn ghost mt" onclick="showCheck()">📋 문제 검토 (선생님용)</button>
+    <div class="info"><b>안내</b> · 이름과 휴대폰 뒷 4자리만 입력하면 바로 응시합니다.
+      매 시험마다 과목별로 문제가 무작위 출제됩니다. 오답 보기는 자동 생성된 것이라
+      <b>문제 검토</b> 화면에서 한 번 확인해 주세요.</div>
+  </section>
+
+  <!-- EXAM -->
+  <section id="exam" class="hidden">
+    <div class="topbar"><div class="inner">
+      <div class="timer" id="timer">60:00</div>
+      <div class="progresswrap"><div class="bar"><i id="progFill"></i></div><div class="lab" id="progLab">0 / 0</div></div>
+      <button class="btn gray sm" onclick="confirmSubmit()">제출</button>
+    </div></div>
+    <div class="qcard">
+      <div class="qmeta"><span class="tag" id="qSubject">과목</span><span class="qno" id="qNo">문제</span></div>
+      <div class="qtext" id="qText"></div>
+      <div id="choices"></div>
+      <div class="toolrow">
+        <label class="mark"><input type="checkbox" id="flagBox" onchange="toggleFlag()"> 나중에 다시 풀기 표시</label>
+        <span class="small" id="answeredCount"></span>
+      </div>
+      <div class="navrow">
+        <button class="btn gray" onclick="go(-1)">◀ 이전</button>
+        <button class="btn" onclick="go(1)">다음 ▶</button>
+      </div>
+    </div>
+    <div class="grid" id="grid"></div>
+    <div class="legend">
+      <span><i class="dot" style="background:var(--accent)"></i> 푼 문제</span>
+      <span><i class="dot" style="background:var(--card);border:1px solid var(--line)"></i> 안 푼 문제</span>
+      <span><i class="dot" style="background:var(--gold)"></i> 다시 풀기 표시</span>
+    </div>
+  </section>
+
+  <!-- RESULT -->
+  <section id="result" class="hidden">
+    <div class="result-hero">
+      <div id="stamp" class="stamp pass">합격</div>
+      <div class="bigscore"><span id="scoreNum">0</span><small> / 100점</small></div>
+      <div class="small" id="resultLine"></div>
+    </div>
+    <div class="subtable" id="subtable"></div>
+    <div class="navrow">
+      <button class="btn ghost" onclick="showReview()">정답·해설 보기</button>
+      <button class="btn" onclick="goHome()">처음으로</button>
+    </div>
+  </section>
+
+  <!-- REVIEW (오답노트) -->
+  <section id="review" class="hidden">
+    <div class="brand"><h1 class="serif" style="font-size:28px">오답 노트</h1></div>
+    <div id="revList"></div>
+    <button class="btn mt" onclick="showResult()">결과로 돌아가기</button>
+  </section>
+
+  <!-- CHECK (문제 검토) -->
+  <section id="check" class="hidden">
+    <div class="brand"><h1 class="serif" style="font-size:28px">문제 검토</h1>
+      <p class="small">전체 문제·정답·해설입니다. 잘못된 보기나 정답이 있으면 알려주세요.</p></div>
+    <div id="checkBody"></div>
+    <button class="btn mt" onclick="goHome()">처음으로</button>
+  </section>
+
+  <!-- STUDY (요점정리) -->
+  <section id="study" class="hidden">
+    <div class="brand"><h1 class="serif" style="font-size:28px">요점정리</h1>
+      <p class="small">시험에 나오는 핵심만 과목별로 정리했어요.</p></div>
+    <div class="tabs">
+      <button class="tab active" id="tab제과기능사" onclick="setStudy('제과기능사')">🍰 제과기능사</button>
+      <button class="tab" id="tab제빵기능사" onclick="setStudy('제빵기능사')">🍞 제빵기능사</button>
+    </div>
+    <div id="studyBody"></div>
+    <div class="navrow">
+      <button class="btn ghost" onclick="printStudy()">🖨 인쇄하기</button>
+      <button class="btn" onclick="goHome()">처음으로</button>
+    </div>
+  </section>
+
+  <!-- PRACTICAL (실기 요약) -->
+  <section id="practical" class="hidden">
+    <div class="brand"><h1 class="serif" style="font-size:28px">실기 요약</h1>
+      <p class="small">제품별 온도·시간·핵심 포인트 정리 (가로로 스크롤하며 보세요)</p></div>
+    <div class="tabs">
+      <button class="tab active" id="ptab제과기능사" onclick="setPractical('제과기능사')">🍰 제과 실기</button>
+      <button class="tab" id="ptab제빵기능사" onclick="setPractical('제빵기능사')">🍞 제빵 실기</button>
+    </div>
+    <div id="practicalBody"></div>
+    <div class="navrow">
+      <button class="btn ghost" onclick="printStudy()">🖨 인쇄하기</button>
+      <button class="btn" onclick="goHome()">처음으로</button>
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* ===== 학원 설정 (여기 두 줄만 바꿔 쓰세요) ===== */
+const ACCESS_PASSWORD = "03180772432";   // 접속 비밀번호
+const GAS_URL = "";                      // 구글 시트 연동 주소 (Apps Script 배포 URL). 비워두면 기록 안 함.
+
+/* ===== 과목 구성 ===== */
+const SUBJECTS = {
+  "제과기능사":["제과이론","재료과학","영양학","식품위생학","제과제조작업"],
+  "제빵기능사":["제빵이론","재료과학","영양학","식품위생학","생산작업준비"]
+};
+/* 시험당 과목별 출제 수 (총 60문항) */
+const DRAW = {
+  "제과기능사":{"제과이론":15,"재료과학":15,"영양학":5,"식품위생학":10,"제과제조작업":15},
+  "제빵기능사":{"제빵이론":15,"재료과학":15,"영양학":5,"식품위생학":10,"생산작업준비":15}
+};
+
+/* ===== 문제은행 =====  q=문제, c=보기, a=정답 인덱스(0~3), ex=해설 */
+const BANK = {
+"제과이론":[
+ {q:"쿠키에서 퍼짐율(퍼짐 정도)을 조절하는 대표적인 재료는?",c:["설탕","소금","계란","베이킹파우더"],a:0,ex:"쿠키의 퍼짐은 설탕에 의해 조절되며 설탕 입자 크기에 영향을 받는다."},
+ {q:"거품형 케이크의 필수 재료가 아닌 것은?",c:["밀가루","설탕","계란","고체유지"],a:3,ex:"거품형 필수 재료는 밀가루·설탕·소금·계란이며, 고체유지는 반죽형의 필수 재료다."},
+ {q:"반죽형 케이크에는 들어가지만 거품형 케이크에는 들어가지 않는 필수 재료는?",c:["고체유지","설탕","소금","계란"],a:0,ex:"반죽형 케이크의 필수 재료에는 고체유지가 포함된다."},
+ {q:"공립법 중 더운 믹싱(가온법)의 반죽 온도로 옳은 것은?",c:["43도","22~24도","15도","60도"],a:0,ex:"가온법은 계란과 설탕을 약 43도로 데워 믹싱한다."},
+ {q:"공립법 중 찬 믹싱(일반법)의 반죽 온도로 옳은 것은?",c:["22~24도","43도","15도","35도"],a:0,ex:"일반법(찬믹싱)은 22~24도에서 진행한다."},
+ {q:"유지와 설탕을 먼저 믹싱하여 부피감을 주는 반죽형 케이크 제법은?",c:["크림법","블렌딩법","설탕물법","1단계법"],a:0,ex:"크림법은 유지+설탕을 먼저 섞어 공기를 포집해 부피감을 준다."},
+ {q:"유지에 밀가루를 먼저 섞어 유연감(부드러움)을 주는 반죽형 제법은?",c:["블렌딩법","크림법","설탕물법","1단계법"],a:0,ex:"블렌딩법은 유지에 밀가루를 넣어 파슬파슬하게 섞은 뒤 나머지를 넣는다."},
+ {q:"모든 재료를 한 번에 넣고 혼합하는 반죽형 제법은?",c:["1단계법(단단계법)","크림법","블렌딩법","별립법"],a:0,ex:"1단계법은 전 재료를 한 번에 혼합한다."},
+ {q:"흰자와 노른자를 각각 따로 거품 낸 뒤 혼합하는 거품형 제법은?",c:["별립법","공립법","크림법","제누와즈법"],a:0,ex:"별립법은 흰자와 노른자를 분리해 각각 믹싱 후 합친다."},
+ {q:"전란을 함께 거품 내어 만드는 거품형 제법은?",c:["공립법","별립법","블렌딩법","시퐁법"],a:0,ex:"공립법은 전란을 함께 믹싱한다."},
+ {q:"물리적 팽창과 화학적 팽창을 함께 이용하는 반죽법은?",c:["시퐁법","공립법","크림법","블렌딩법"],a:0,ex:"시퐁법은 거품(물리적)과 팽창제(화학적)를 함께 사용한다."},
+ {q:"제누와즈법에서 유지를 투입하는 순서로 옳은 것은?",c:["가장 마지막에 넣는다","가장 먼저 넣는다","설탕과 함께 넣는다","계란보다 먼저 넣는다"],a:0,ex:"제누와즈법에서 유지는 마지막에 넣는다."},
+ {q:"블렌딩법에서 믹서에 연결해 재료를 혼합할 때 주로 쓰는 도구는?",c:["비터","휘퍼","훅","스크레이퍼"],a:0,ex:"블렌딩법에는 비터를 주로 사용한다."},
+ {q:"계란 전체(전란)의 수분 함량으로 옳은 것은?",c:["75%","88%","50%","25%"],a:0,ex:"전란은 수분 75%, 고형분 25%이다."},
+ {q:"계란 흰자의 수분 함량으로 옳은 것은?",c:["88%","75%","50%","12%"],a:0,ex:"흰자는 수분 88%, 고형분 12%이다(우유 수분과 같다)."},
+ {q:"계란의 구성 비율(껍질 : 노른자 : 흰자)로 옳은 것은?",c:["10 : 30 : 60","20 : 30 : 50","10 : 40 : 50","15 : 25 : 60"],a:0,ex:"계란은 껍질 10%, 노른자 30%, 흰자 60%로 구성된다."},
+ {q:"베이커스 퍼센트(Baker's %)에서 100%의 기준이 되는 재료는?",c:["밀가루","설탕","물","계란"],a:0,ex:"베이커스 퍼센트는 밀가루를 100%로 기준한다."},
+ {q:"제과에서 '고율배합'에 대한 설명으로 옳은 것은?",c:["가루보다 설탕이 많은 배합","설탕보다 가루가 많은 배합","물이 가장 많은 배합","유지가 가장 많은 배합"],a:0,ex:"고율배합은 가루보다 설탕이 많은 배합이다."},
+ {q:"고율배합 반죽에 알맞은 굽기 방법은?",c:["저온 장시간(오버베이킹)","고온 단시간(언더베이킹)","고온 장시간","저온 단시간"],a:0,ex:"고율배합은 저온 장시간(오버베이킹)으로 굽는다."},
+ {q:"반죽형 쿠키 중 수분이 가장 많은 쿠키는?",c:["드롭 쿠키","스냅 쿠키","쇼트브레드 쿠키","머랭 쿠키"],a:0,ex:"드롭 쿠키(소프트 쿠키)는 반죽형 쿠키 중 수분이 가장 많다."},
+ {q:"가나슈 크림을 만들 때 초콜릿과 생크림의 일반적 비율은?",c:["1 : 1","2 : 1","1 : 2","3 : 1"],a:0,ex:"가나슈는 초콜릿과 생크림을 1:1로 사용한다."},
+ {q:"무스를 만들 때 주로 사용하는 머랭은?",c:["이탈리안 머랭","프렌치 머랭","스위스 머랭","온제 머랭"],a:0,ex:"무스에는 시럽을 끓여 만드는 이탈리안 머랭을 사용한다."},
+ {q:"산성 반죽의 특징으로 옳은 것은?",c:["색이 밝고 단단하며 부피가 작다","색이 어둡고 부피가 크다","향이 강하고 부드럽다","노화가 매우 느리다"],a:0,ex:"산성 반죽은 밝고 단단하며 향이 옅고 부피가 작다."}
+],
+"재료과학":[
+ {q:"다음 중 단당류에 해당하는 것은?",c:["포도당","설탕","맥아당","유당"],a:0,ex:"포도당·과당·갈락토오스가 단당류이며, 나머지는 이당류다."},
+ {q:"설탕(자당)을 분해하는 효소는?",c:["인버타아제","말타아제","락타아제","치마아제"],a:0,ex:"설탕은 인버타아제에 의해 분해된다."},
+ {q:"맥아당을 분해하는 효소는?",c:["말타아제","인버타아제","락타아제","리파아제"],a:0,ex:"맥아당은 말타아제로 분해된다."},
+ {q:"유당을 분해하는 효소는?",c:["락타아제","인버타아제","말타아제","프로테아제"],a:0,ex:"유당은 락타아제로 분해된다."},
+ {q:"상대적 감미도가 가장 높은 당은?",c:["과당","설탕","포도당","유당"],a:0,ex:"감미도 순서는 과당(175) > 전화당 > 설탕 > 포도당 > 맥아당 > 갈락토오스 > 유당이다."},
+ {q:"상대적 감미도의 기준(100)이 되는 당은?",c:["설탕(자당)","포도당","과당","맥아당"],a:0,ex:"설탕을 100으로 기준해 감미도를 비교한다."},
+ {q:"강력분의 단백질 함량 범위로 옳은 것은?",c:["11.5~13%","9~11%","7~9%","13~15%"],a:0,ex:"강력분 11.5~13%, 중력분 9~11%, 박력분 7~9%이다."},
+ {q:"박력분의 단백질 함량 범위로 옳은 것은?",c:["7~9%","11.5~13%","9~11%","5~6%"],a:0,ex:"박력분은 단백질 7~9%로 제과에 적합하다."},
+ {q:"글루텐을 구성하며 신장성을 담당하는 단백질은?",c:["글리아딘","글루테닌","알부민","글로불린"],a:0,ex:"글리아딘은 신장성, 글루테닌은 탄력을 담당한다."},
+ {q:"글루텐을 구성하며 탄력(탄성)을 담당하는 단백질은?",c:["글루테닌","글리아딘","카세인","글리시닌"],a:0,ex:"글루테닌이 탄력을 담당한다."},
+ {q:"우유의 주된 단백질은?",c:["카세인","알부민","글로불린","락토오스"],a:0,ex:"우유의 주 단백질은 카세인이다."},
+ {q:"제빵에 가장 적합한 물은?",c:["아경수(120~180ppm)","연수(60ppm 미만)","경수(180ppm 이상)","증류수(0ppm)"],a:0,ex:"아경수(120~180ppm)가 제빵에 가장 적합하다. 연수 60ppm 미만, 아연수 60~120ppm, 경수 180ppm 이상으로 구분한다."},
+ {q:"물의 경도를 나누는 기준이 되는 물질은?",c:["탄산칼슘","염화나트륨","탄산수소나트륨","포도당"],a:0,ex:"경도는 물에 녹은 탄산칼슘 함량을 기준으로 나눈다."},
+ {q:"이스트(효모)가 사멸하는 온도는?",c:["60도","40도","100도","74도"],a:0,ex:"이스트는 약 60도에서 사멸한다."},
+ {q:"전분의 호화가 시작되는 온도는?",c:["60도","40도","100도","20도"],a:0,ex:"전분 호화는 약 60도에서 시작된다."},
+ {q:"소금이 반죽에 하는 주된 작용은?",c:["경화(반죽을 단단하게)","연화(부드럽게)","팽창","발효 촉진"],a:0,ex:"소금은 반죽을 단단하게 하는 경화 작용을 한다."},
+ {q:"설탕이 반죽에 하는 주된 작용은?",c:["연화(반죽을 부드럽게)","경화","산화","응고"],a:0,ex:"설탕은 반죽을 부드럽게 하는 연화 작용을 한다."},
+ {q:"베이킹파우더의 구성 성분이 아닌 것은?",c:["이스트","중조","산작용제","분산제"],a:0,ex:"베이킹파우더는 중조·산작용제·분산제로 구성되며 이스트는 포함되지 않는다."},
+ {q:"우뭇가사리에서 추출한 안정제는?",c:["한천","젤라틴","펙틴","카라기난"],a:0,ex:"한천은 우뭇가사리에서 추출한다."},
+ {q:"동물의 껍질·연골(콜라겐)에서 추출한 안정제는?",c:["젤라틴","한천","펙틴","검"],a:0,ex:"젤라틴은 동물의 콜라겐에서 추출한다."},
+ {q:"과일의 세포벽에 들어 있는 안정제는?",c:["펙틴","한천","젤라틴","CMC"],a:0,ex:"펙틴은 과일의 세포벽에 들어 있다."},
+ {q:"버터의 일반적인 수분 함량은?",c:["14~17%","0~3%","28~32%","48~52%"],a:0,ex:"버터는 수분 14~17%, 유지방 약 80%이다."},
+ {q:"쇼트닝의 수분과 지방 함량으로 옳은 것은?",c:["수분 0%, 지방 100%","수분 15%, 지방 85%","수분 50%, 지방 50%","수분 20%, 지방 80%"],a:0,ex:"쇼트닝은 수분 0%, 지방 100%이다."},
+ {q:"유지가 산화되어 불쾌한 냄새가 나고 변색되는 현상은?",c:["산패","부패","변패","호화"],a:0,ex:"유지의 산화 변질을 산패라 한다."},
+ {q:"가소성에 대한 설명으로 옳은 것은?",c:["낮은 온도에서 쉽게 단단해지지 않고 높은 온도에서 쉽게 무르지 않는 성질","물과 기름을 섞이게 하는 성질","공기를 포집하는 성질","산화에 견디는 성질"],a:0,ex:"가소성은 온도 변화에도 형태를 유지하는 성질이다."},
+ {q:"초콜릿을 구성하는 코코아와 카카오버터의 비율로 옳은 것은?",c:["코코아 62.5%, 카카오버터 37.5%","코코아 37.5%, 카카오버터 62.5%","코코아 50%, 카카오버터 50%","코코아 70%, 카카오버터 30%"],a:0,ex:"초콜릿은 코코아 5/8(62.5%), 카카오버터 3/8(37.5%)로 본다."},
+ {q:"초콜릿을 잘못 보관하여 설탕이 표면에 올라오는 현상은?",c:["슈가 블룸","팻 블룸","산패","발한"],a:0,ex:"보관 불량으로 설탕이 올라오면 슈가 블룸이다."},
+ {q:"포도당과 과당이 같은 양으로 혼합되어 있는 당류는?",c:["전화당","맥아당","유당","설탕"],a:0,ex:"전화당은 포도당과 과당이 동량 혼합된 것이다."},
+ {q:"생이스트의 수분 함량은?",c:["70%","12%","50%","88%"],a:0,ex:"생이스트의 수분은 약 70%이다."},
+ {q:"분당이 덩어리지는 것을 막기 위해 첨가하는 것은?",c:["전분","소금","설탕","베이킹파우더"],a:0,ex:"분당에는 덩어리 방지를 위해 전분 약 3%를 넣는다."},
+ {q:"우유에서 수분만 제거해 분말화한 것은?",c:["전지분유","탈지분유","연유","생크림"],a:0,ex:"전지분유는 수분만 제거한 것이다."},
+ {q:"효소 레닌으로 카세인을 응고·발효·숙성시켜 만든 것은?",c:["치즈","요구르트","버터","생크림"],a:0,ex:"레닌(레넷)으로 카세인을 응고시키면 치즈가 된다."},
+ {q:"밀가루의 종류(강력·중력·박력)를 나누는 기준은?",c:["단백질 함량","회분 함량","수분 함량","입자 크기"],a:0,ex:"밀가루 종류는 단백질 함량으로, 등급은 회분 함량으로 나눈다."},
+ {q:"밀가루의 등급을 나누는 기준은?",c:["회분 함량","단백질 함량","색","글루텐 양"],a:0,ex:"밀가루 등급은 회분 함량으로 나눈다."},
+ {q:"요오드값이 130 이상인 유지의 분류는?",c:["건성유","불건성유","반건성유","포화유"],a:0,ex:"요오드값 100 이하 불건성유, 100~130 반건성유, 130 이상 건성유이다."}
+],
+"영양학":[
+ {q:"열량 영양소 3가지에 해당하지 않는 것은?",c:["비타민","탄수화물","단백질","지방"],a:0,ex:"열량 영양소는 탄수화물·단백질·지방이며 비타민은 조절 영양소다."},
+ {q:"지방 1g이 내는 열량은?",c:["9kcal","4kcal","7kcal","5kcal"],a:0,ex:"지방은 1g당 9kcal, 탄수화물·단백질은 4kcal이다."},
+ {q:"탄수화물 1g이 내는 열량은?",c:["4kcal","9kcal","7kcal","2kcal"],a:0,ex:"탄수화물은 1g당 4kcal이다."},
+ {q:"탄수화물·지방에는 없고 단백질에만 들어 있는 원소는?",c:["질소(N)","탄소(C)","수소(H)","산소(O)"],a:0,ex:"단백질은 탄소·수소·산소에 더해 질소(와 황)를 가진다."},
+ {q:"비타민C 결핍으로 생기는 질병은?",c:["괴혈병","각기병","야맹증","구루병"],a:0,ex:"비타민C 결핍은 괴혈병을 일으킨다."},
+ {q:"비타민B1(티아민) 결핍으로 생기는 질병은?",c:["각기병","괴혈병","펠라그라","빈혈"],a:0,ex:"비타민B1 결핍은 각기병을 일으킨다."},
+ {q:"비타민A 결핍으로 생기는 대표 증상은?",c:["야맹증","구루병","괴혈병","각기병"],a:0,ex:"비타민A 결핍은 야맹증을 일으킨다."},
+ {q:"비타민D 결핍으로 생기는 질병은?",c:["구루병","야맹증","괴혈병","펠라그라"],a:0,ex:"비타민D 결핍은 구루병을 일으킨다."},
+ {q:"혈당을 낮추는 호르몬은?",c:["인슐린","글루카곤","아드레날린","티록신"],a:0,ex:"인슐린은 혈당을 저하시킨다."},
+ {q:"헤모글로빈을 구성하는 무기질은?",c:["철","칼슘","인","나트륨"],a:0,ex:"철은 헤모글로빈의 구성 성분이다."},
+ {q:"다음 중 필수 지방산에 해당하는 것은?",c:["리놀레산","올레산","스테아르산","팔미트산"],a:0,ex:"필수 지방산은 리놀레산·리놀렌산·아라키돈산이다."},
+ {q:"침(타액)에 들어 있는 소화효소는?",c:["프티알린","펩신","리파아제","트립신"],a:0,ex:"타액에는 프티알린(아밀라아제)이 들어 있다."},
+ {q:"완전 단백질에 해당하는 것은?",c:["우유 카세인","옥수수 제인","글리아딘","글루테닌"],a:0,ex:"카세인은 필수 아미노산을 고루 갖춘 완전 단백질이다."}
+],
+"식품위생학":[
+ {q:"위해요소분석과 중요관리점을 뜻하는 식품안전관리체계의 약칭은?",c:["HACCP","GMP","ISO","KS"],a:0,ex:"HACCP은 위해요소 분석과 중요관리점 관리 체계다."},
+ {q:"단백질이 미생물에 의해 변질되는 현상은?",c:["부패","변패","산패","발효"],a:0,ex:"단백질의 변질을 부패라 한다."},
+ {q:"탄수화물·지방이 변질되는 현상은?",c:["변패","부패","산패","호화"],a:0,ex:"탄수화물·지방의 변질을 변패라 한다."},
+ {q:"지방이 산소와 결합하여 변질되는 현상은?",c:["산패","부패","변패","발효"],a:0,ex:"지방이 산소와 결합해 변질되면 산패다."},
+ {q:"미생물이 식품에 이롭게 작용하는 경우(술·빵·간장)는?",c:["발효","부패","변패","산패"],a:0,ex:"이롭게 변하면 발효라 한다."},
+ {q:"종업원의 손 소독이나 식기 세척에 쓰는 소독제는?",c:["역성비누","석탄산","크레졸","포르말린"],a:0,ex:"역성비누는 손·식기 소독에 쓰는 양이온 계면활성제다."},
+ {q:"소독력의 표준 시약이 되는 3% 수용액 소독제는?",c:["석탄산","역성비누","크레졸","알코올"],a:0,ex:"석탄산 3% 수용액이 소독력의 표준 시약이다."},
+ {q:"카드뮴(Cd) 중독으로 생기는 병은?",c:["이타이이타이병","미나마타병","펠라그라","각기병"],a:0,ex:"카드뮴 중독은 이타이이타이병(신장장애·골연화증)을 일으킨다."},
+ {q:"수은(Hg) 중독으로 생기는 병은?",c:["미나마타병","이타이이타이병","괴혈병","구루병"],a:0,ex:"수은 중독은 미나마타병을 일으킨다."},
+ {q:"분변 오염의 지표가 되는 균은?",c:["대장균","유산균","효모","곰팡이"],a:0,ex:"대장균은 분변 오염의 지표균이다."},
+ {q:"다음 중 감염형 식중독을 일으키는 균은?",c:["살모넬라","보툴리누스균","포도상구균","곰팡이"],a:0,ex:"살모넬라·장염비브리오·병원성대장균이 감염형이다."},
+ {q:"독소형 식중독을 일으키며 신경독(뉴로톡신)을 내는 균은?",c:["보툴리누스균","살모넬라","장염비브리오","대장균"],a:0,ex:"보툴리누스균은 뉴로톡신을 생성하며 치사율이 높다."},
+ {q:"황색포도상구균이 만들어내는 식중독 독소는?",c:["엔테로톡신","뉴로톡신","테트로도톡신","솔라닌"],a:0,ex:"포도상구균은 엔테로톡신(내열성)을 생성한다."},
+ {q:"복어가 가진 자연독의 이름은?",c:["테트로도톡신","삭시톡신","베네루핀","무스카린"],a:0,ex:"복어독은 테트로도톡신이다."},
+ {q:"감자의 싹에 들어 있는 자연독은?",c:["솔라닌","무스카린","아미그달린","시큐톡신"],a:0,ex:"감자 싹의 독은 솔라닌이다."},
+ {q:"독버섯이 가진 대표적인 독성분은?",c:["무스카린","솔라닌","테트로도톡신","고시폴"],a:0,ex:"독버섯의 독은 무스카린이다."},
+ {q:"어패류 생식이 원인이며 호염성인 감염형 식중독균은?",c:["장염비브리오균","살모넬라","보툴리누스균","포도상구균"],a:0,ex:"장염비브리오는 소금을 좋아하는 호염성 균이다."},
+ {q:"돼지고기 생식으로 감염되는 기생충은?",c:["유구조충(갈고리촌충)","무구조충(민촌충)","간디스토마","폐디스토마"],a:0,ex:"돼지고기 생식은 유구조충 감염의 원인이다."},
+ {q:"소고기 생식으로 감염되는 기생충은?",c:["무구조충(민촌충)","유구조충(갈고리촌충)","폐디스토마","회충"],a:0,ex:"소고기 생식은 무구조충 감염의 원인이다."},
+ {q:"식품 제조 시 생긴 거품을 없애기 위해 넣는 첨가물은?",c:["소포제","유화제","보존료","팽창제"],a:0,ex:"거품 제거용 첨가물은 소포제다."},
+ {q:"제과·제빵에 사용하는 보존료는?",c:["프로피온산","붕산","아우라민","둘신"],a:0,ex:"프로피온산은 제과·제빵용 보존료다."},
+ {q:"유해 착색료 중 핑크색 합성색소는?",c:["로다민B","아우라민","둘신","롱가리트"],a:0,ex:"로다민B는 핑크색 유해 합성색소다."}
+],
+"제과제조작업":[
+ {q:"빵과 케이크 반죽을 모두 돌릴 수 있어 소규모 제과점에서 주로 쓰는 믹서는?",c:["수직형(버티컬) 믹서","수평형 믹서","스파이럴 믹서","에어 믹서"],a:0,ex:"수직형 믹서는 다용도라 소규모 제과점에서 많이 쓴다."},
+ {q:"소규모 제과점에서 주로 사용하는 오븐은?",c:["데크 오븐","터널 오븐","컨벡션 오븐","로터리 오븐"],a:0,ex:"데크 오븐은 소규모 제과점에서 주로 쓴다."},
+ {q:"입구와 출구가 다르며 대량 생산 공장에서 많이 쓰는 오븐은?",c:["터널식 오븐","데크 오븐","컨벡션 오븐","적외선 오븐"],a:0,ex:"터널식 오븐은 입구와 출구가 달라 대량 생산에 쓴다."},
+ {q:"뜨거운 공기를 강제로 순환시켜 굽는 대류식 오븐은?",c:["컨벡션 오븐","데크 오븐","터널 오븐","가마 오븐"],a:0,ex:"컨벡션 오븐은 공기를 강제 순환시키는 대류식이다."},
+ {q:"분할이 끝난 반죽의 표피를 매끄럽고 둥글게 해 주는 기계는?",c:["라운더","분할기","정형기","파이롤러"],a:0,ex:"라운더는 분할 후 반죽을 둥글린다."},
+ {q:"1차 발효가 끝난 반죽을 정해진 크기로 나누는 기계는?",c:["분할기","라운더","정형기","믹서"],a:0,ex:"분할기는 반죽을 일정 크기로 나눈다."},
+ {q:"중간 발효를 마친 반죽을 밀고 펴서 모양을 만드는 기계는?",c:["정형기","분할기","라운더","파이롤러"],a:0,ex:"정형기는 반죽을 밀어 펴 모양을 잡는다."},
+ {q:"반죽을 얇게 밀어 펴는 기계는?",c:["파이롤러","라운더","정형기","분할기"],a:0,ex:"파이롤러는 반죽을 얇게 밀어 편다."},
+ {q:"비중을 구하는 식으로 옳은 것은?",c:["반죽 무게 ÷ 물 무게","물 무게 ÷ 반죽 무게","반죽 무게 × 물 무게","반죽 무게 - 물 무게"],a:0,ex:"비중은 반죽 무게를 물 무게로 나눈 값이다."},
+ {q:"중간 발효를 가리키는 다른 이름은?",c:["벤치 타임(오버헤드 프루퍼)","1차 발효","2차 발효","펀치"],a:0,ex:"중간 발효는 벤치 타임 또는 오버헤드 프루퍼라 한다."},
+ {q:"튀김 기름의 표준 온도는?",c:["180~195도","140~160도","200~220도","160~170도"],a:0,ex:"튀김 기름의 표준 온도는 180~195도다."},
+ {q:"튀김기에 붓는 적정 기름의 깊이는?",c:["12~15cm","5~8cm","20~25cm","2~4cm"],a:0,ex:"적정 기름 깊이는 12~15cm다."},
+ {q:"도넛 표면에 글레이즈하는 적정 온도는?",c:["49도","35도","73도","102도"],a:0,ex:"도넛 글레이즈는 약 49도에서 한다."},
+ {q:"도넛의 발한 현상을 방지하는 방법으로 옳지 않은 것은?",c:["튀김 온도를 낮춰 수분을 남긴다","충분히 식힌 후 아이싱한다","설탕 사용량을 늘려 열을 분산시킨다","튀김 시간을 늘려 수분을 날린다"],a:0,ex:"발한을 막으려면 수분을 충분히 날려야 하므로 온도를 낮춰 수분을 남기면 안 된다."},
+ {q:"파운드 케이크의 팬닝비는?",c:["70%","50%","60%","95%"],a:0,ex:"파운드 케이크의 팬닝비는 70%(비용적 2.4㎤)다."},
+ {q:"스펀지 케이크의 팬닝비는?",c:["60%","70%","95%","50%"],a:0,ex:"스펀지 케이크의 팬닝비는 60%(비용적 5.08㎤)다."},
+ {q:"푸딩의 팬닝비는?",c:["95%","60%","70%","80%"],a:0,ex:"푸딩의 팬닝비는 95%다."},
+ {q:"푸딩을 중탕으로 굽는 적정 온도는?",c:["160~170도","180~200도","100~120도","140~150도"],a:0,ex:"푸딩 중탕은 160~170도이며 온도가 높으면 기포가 생긴다."},
+ {q:"캐러멜화 반응이 일어나는 온도는?",c:["160~180도","100~120도","200~220도","60~80도"],a:0,ex:"캐러멜화는 약 160~180도에서 일어난다."},
+ {q:"굽기 중 팽창 과정에서 오븐을 절대 열면 안 되는 제품은?",c:["슈, 퍼프 페이스트리","파운드 케이크","식빵","머핀"],a:0,ex:"슈와 퍼프 페이스트리는 팽창 중 오븐을 열면 주저앉는다."},
+ {q:"파이 제조 시 과일 충전물이 끓어 넘치는 원인이 아닌 것은?",c:["껍질에 구멍(증기 구멍)을 충분히 뚫었다","충전물 온도가 높다","오븐 온도가 높다","설탕 함량이 높다"],a:0,ex:"껍질에 구멍을 충분히 뚫으면 오히려 끓어 넘침을 막는다."},
+ {q:"롤케이크 말기에서 표면 터짐을 방지하는 방법이 아닌 것은?",c:["오버베이킹을 충분히 한다","설탕 일부를 물엿·시럽으로 대체한다","덱스트린을 첨가해 점착성을 높인다","과팽창 시 팽창제 사용을 줄인다"],a:0,ex:"오버베이킹은 표면을 건조시켜 터짐을 유발하므로 피한다."},
+ {q:"퍼프 페이스트리의 반죽 온도로 알맞은 것은?",c:["18~20도","27도","5~10도","30~35도"],a:0,ex:"퍼프 페이스트리 반죽 온도는 18~20도다."},
+ {q:"퍼프 페이스트리 제조에 사용하는 밀가루는?",c:["강력분","박력분","중력분","통밀가루"],a:0,ex:"신장성이 필요해 강력분을 사용한다."},
+ {q:"페이스트리류에서 가장 중요한 유지의 성질은?",c:["가소성·신장성","크림성","안정성","유화성"],a:0,ex:"페이스트리는 유지의 가소성·신장성이 가장 중요하다."},
+ {q:"다음 중 냉과자(냉 과자류)에 해당하지 않는 것은?",c:["파운드 케이크","무스","젤리","바바루아"],a:0,ex:"냉과는 무스·푸딩·젤리·블라망제·바바루아 등이며 파운드 케이크는 아니다."},
+ {q:"피자에 주로 사용하는 향신료는?",c:["오레가노","넛메그","캐러웨이씨","시나몬"],a:0,ex:"피자에는 오레가노를 쓴다."},
+ {q:"도넛에 주로 사용하는 향신료는?",c:["넛메그","오레가노","캐러웨이씨","정향"],a:0,ex:"도넛에는 넛메그를 쓴다(기름 냄새 제거)."}
+],
+"제빵이론":[
+ {q:"제빵의 기본(필수) 재료가 아닌 것은?",c:["설탕","밀가루","이스트","소금"],a:0,ex:"제빵의 기본 재료는 밀가루·이스트·소금·물이다."},
+ {q:"1차 발효의 적정 온도와 습도로 옳은 것은?",c:["온도 27도, 습도 75~80%","온도 38도, 습도 90%","온도 15도, 습도 60%","온도 45도, 습도 50%"],a:0,ex:"1차 발효는 온도 27도, 습도 75~80%에서 진행한다."},
+ {q:"1차 발효 중 펀치를 하는 이유로 옳지 않은 것은?",c:["글루텐을 파괴하기 위해","산소를 공급해 이스트를 활성화하려고","반죽 온도를 균일하게 하려고","발효 시간을 단축하려고"],a:0,ex:"펀치는 이스트 활성화·온도 균일화·발효 단축을 위한 것으로 글루텐 파괴와는 무관하다."},
+ {q:"소금을 몇 % 이상 사용하면 발효가 저해되는가?",c:["1% 이상","5% 이상","0.1% 이상","10% 이상"],a:0,ex:"소금은 1% 이상 사용 시 발효를 저해한다."},
+ {q:"설탕을 몇 % 이상 사용하면 발효가 저해되는가?",c:["5% 이상","1% 이상","10% 이상","0.5% 이상"],a:0,ex:"설탕은 5% 이상 사용 시 발효를 저해한다."},
+ {q:"일반적인 발효 손실은 어느 정도인가?",c:["1~2%","5~6%","10% 이상","0.1% 이하"],a:0,ex:"일반적인 발효 손실은 1~2%이다."},
+ {q:"스펀지도우법(중종법)에서 스펀지 반죽의 온도는?",c:["24도","27도","30도","20도"],a:0,ex:"스펀지 반죽 24도, 본반죽(도우) 27도이다."},
+ {q:"스펀지도우법(중종법)에서 본반죽(도우)의 온도는?",c:["27도","24도","30도","38도"],a:0,ex:"본반죽(도우)의 온도는 27도이다."},
+ {q:"스펀지도우법(중종법)에 대한 설명으로 옳은 것은?",c:["반죽을 스펀지와 본반죽으로 나누어 두 번 배합한다","모든 재료를 한 번에 섞는다","액체 종을 먼저 만든다","반죽을 냉동 후 사용한다"],a:0,ex:"중종법은 스펀지 반죽과 본반죽을 두 번에 나누어 배합하는 방법이다."},
+ {q:"빵 반죽의 냉동·냉장·해동·2차 발효를 자동으로 조절하는 기계는?",c:["도우 컨디셔너","분할기","라운더","오버헤드 프루퍼"],a:0,ex:"도우 컨디셔너는 발효 과정을 프로그래밍해 자동 조절한다."},
+ {q:"믹싱 6단계 중 재료가 수화되며 혼합되는 첫 단계는?",c:["픽업 단계","클린업 단계","발전 단계","렛다운 단계"],a:0,ex:"픽업 단계는 재료가 섞이며 수화되는 단계다."},
+ {q:"믹싱 6단계 중 글루텐이 형성되기 시작하며 후염법의 소금 투입 시기인 단계는?",c:["클린업 단계","픽업 단계","발전 단계","최종 단계"],a:0,ex:"클린업 단계에서 글루텐이 형성되기 시작한다."},
+ {q:"믹싱 6단계 중 탄력성이 최대이며 믹서에 최대 에너지가 필요한 단계는?",c:["발전 단계","클린업 단계","렛다운 단계","브레이크다운 단계"],a:0,ex:"발전 단계는 탄력성이 최대인 단계다."},
+ {q:"믹싱 6단계 중 탄력성을 잃고 신장성이 커져 고무줄처럼 늘어나는 단계는?",c:["렛다운 단계","발전 단계","최종 단계","픽업 단계"],a:0,ex:"렛다운(지친) 단계에서 신장성이 커진다."},
+ {q:"오븐 스프링이 멈추고 전분이 호화되며 이스트가 사멸하는 반죽 내부 온도는?",c:["60도","49도","74도","100도"],a:0,ex:"60도에서 오븐 스프링이 멈추고 전분 호화·이스트 사멸이 일어난다."},
+ {q:"노타임 반죽법에서 S-S 결합을 절단하는 환원제는?",c:["L-시스테인","브롬산칼륨","아스코르브산","요오드산칼륨"],a:0,ex:"L-시스테인은 S-S 결합을 끊는 환원제다."},
+ {q:"냉동 반죽법에서 1차 발효나 성형을 끝낸 반죽을 급속 냉각하는 온도는?",c:["영하 40도","영하 18도","0도","영하 5도"],a:0,ex:"급속 냉각은 영하 40도, 냉동 저장은 영하 18~20도이다."},
+ {q:"냉동 반죽의 냉동 저장 온도로 옳은 것은?",c:["영하 18~20도","영하 40도","0~4도","영하 5도"],a:0,ex:"냉동 저장 온도는 영하 18~20도이다."},
+ {q:"냉동 반죽법의 조치사항으로 옳지 않은 것은?",c:["이스트 사용량을 절반으로 줄인다","강력분을 사용한다","이스트를 2배로 사용한다","산화제를 사용한다"],a:0,ex:"냉동 반죽은 강력분·이스트 2배·산화제를 쓰며 이스트를 줄이지 않는다."},
+ {q:"액체 발효법(액종법)에서 발효 정도를 확인하는 기준은?",c:["pH","색","무게","점도"],a:0,ex:"액종법은 pH로 발효 정도를 확인한다."},
+ {q:"데니시 퍼프 페이스트리의 반죽 온도는?",c:["18~20도","27도","5~10도","30~35도"],a:0,ex:"데니시 퍼프 페이스트리 반죽 온도는 18~20도다."}
+],
+"생산작업준비":[
+ {q:"성형의 5단계 순서로 옳은 것은?",c:["분할 → 둥글리기 → 중간발효 → 정형 → 팬닝","둥글리기 → 분할 → 정형 → 중간발효 → 팬닝","분할 → 정형 → 둥글리기 → 팬닝 → 중간발효","중간발효 → 분할 → 둥글리기 → 정형 → 팬닝"],a:0,ex:"성형은 분할→둥글리기→중간발효→정형→팬닝 순이다."},
+ {q:"성형의 5단계에 해당하지 않는 것은?",c:["굽기","분할","둥글리기","정형"],a:0,ex:"성형 5단계는 분할·둥글리기·중간발효·정형·팬닝이며 굽기는 포함되지 않는다."},
+ {q:"팬닝을 할 때 적당한 팬의 온도는?",c:["32도","49도","60도","20도"],a:0,ex:"팬닝 시 팬의 온도는 약 32도가 적당하다."},
+ {q:"팬오일이 갖춰야 할 조건으로 옳지 않은 것은?",c:["발연점이 낮을 것","반죽 무게의 0.1~0.2%를 사용할 것","발연점이 높을 것","산패가 쉬운 지방산이 없을 것"],a:0,ex:"팬오일은 발연점이 높아야 하므로 낮을 것은 조건이 아니다."},
+ {q:"기계 분할 시 반죽이 기계에 달라붙지 않도록 쓰는 윤활제와 사용량으로 옳은 것은?",c:["유동파라핀, 반죽량의 0.1%","식용유, 반죽량의 5%","버터, 반죽량의 1%","물, 반죽량의 10%"],a:0,ex:"광물유인 유동파라핀을 반죽량의 0.1% 정도 사용한다."},
+ {q:"전분의 호화력을 곡선으로 나타내는 반죽 시험 기계는?",c:["아밀로그래프","익스텐소그래프","패리노그래프","믹소그래프"],a:0,ex:"아밀로그래프는 전분의 호화력을 곡선으로 나타낸다."},
+ {q:"반죽의 신장성에 대한 저항을 측정하는 시험 기계는?",c:["익스텐소그래프","아밀로그래프","패리노그래프","레오미터"],a:0,ex:"익스텐소그래프는 신장 저항을 측정한다."},
+ {q:"글루텐의 흡수율·질, 반죽의 내구성과 믹싱 시간을 측정하는 시험 기계는?",c:["패리노그래프","아밀로그래프","익스텐소그래프","점도계"],a:0,ex:"패리노그래프는 글루텐 흡수율·질, 반죽 내구성, 믹싱 시간을 측정한다."},
+ {q:"갓 구운 빵을 식히는(냉각) 적정 온도는?",c:["35~40도","20도","49도","60도"],a:0,ex:"냉각 온도는 35~40도가 적당하다."},
+ {q:"빵을 자연 냉각할 때 실온에서 걸리는 시간은?",c:["3~4시간","30분","8시간","1시간"],a:0,ex:"자연 냉각은 실온에서 3~4시간 걸린다."},
+ {q:"흐름성(흐름 성질)에 대한 설명으로 옳은 것은?",c:["반죽이 팬이나 용기의 모양대로 퍼지는 성질","반죽이 부푸는 성질","반죽이 늘어나는 성질","산화에 견디는 성질"],a:0,ex:"흐름성은 반죽이 용기의 모양이 되도록 퍼지는 성질이다."},
+ {q:"산형 식빵의 비용적으로 옳은 것은?",c:["3.2~3.4 cm³/g","2.4 cm³/g","5.08 cm³/g","4.5~5.0 cm³/g"],a:0,ex:"산형 식빵의 비용적은 3.2~3.4cm³/g이다."},
+ {q:"풀먼 식빵의 비용적으로 옳은 것은?",c:["3.4~4.0 cm³/g","3.2~3.4 cm³/g","5.08 cm³/g","2.4 cm³/g"],a:0,ex:"풀먼 식빵의 비용적은 3.4~4.0cm³/g이다."},
+ {q:"비용적에 대한 설명으로 옳은 것은?",c:["반죽 1g당 부푸는 부피","반죽 1개의 무게","팬의 부피","굽는 데 걸리는 시간"],a:0,ex:"비용적은 반죽 1g당 부푸는 부피다."},
+ {q:"파운드 케이크의 팬닝량(팬닝비)으로 옳은 것은?",c:["70%","60%","95%","50%"],a:0,ex:"파운드 케이크의 팬닝량은 70%이다."},
+ {q:"빵 포장 용기가 갖춰야 할 조건으로 옳은 것은?",c:["방수성은 있고 통기성은 없어야 한다","방수성은 없고 통기성은 있어야 한다","방수성·통기성 모두 있어야 한다","방수성·통기성 모두 없어야 한다"],a:0,ex:"포장 용기는 방수성은 있고 통기성은 없어야 한다."},
+ {q:"방충·방서용 금속망(방충망)의 적정 규격은?",c:["30메시","10메시","100메시","5메시"],a:0,ex:"방충망은 30메시 정도가 적당하다."},
+ {q:"식품 공장 마무리 작업의 표준 조도는?",c:["500Lux 이상","50Lux 이상","100Lux 이상","300Lux 이상"],a:0,ex:"마무리 작업의 표준 조도는 500Lux 이상이다."},
+ {q:"어린 반죽(발효 부족)으로 만든 빵에서 나는 냄새는?",c:["생 밀가루 냄새","신 냄새","알코올 냄새","단 냄새"],a:0,ex:"어린 반죽은 생 밀가루 냄새가 난다."},
+ {q:"지친 반죽(과발효)으로 만든 빵에서 나는 냄새는?",c:["신 냄새","생 밀가루 냄새","아무 냄새 없음","탄 냄새"],a:0,ex:"지친 반죽은 신 냄새가 난다."},
+ {q:"정통 바게트의 중량과 길이로 옳은 것은?",c:["중량 350g, 길이 60cm","중량 200g, 길이 40cm","중량 500g, 길이 30cm","중량 350g, 길이 30cm"],a:0,ex:"정통 바게트는 중량 350g, 길이 60cm이다."}
+]
+};
+
+/* ===== 요점정리(학습) ===== 공통 과목(재료과학·영양학·식품위생학)은 두 종목에 함께 표시 */
+const COMMON_STUDY=[
+ {h:"재료과학 · 기초과학",p:[
+  {t:"단당류 — 포도당·과당·갈락토오스",d:"더 이상 쪼개지지 않는 가장 작은 당. 몸이 바로 흡수해 에너지로 쓴다."},
+  {t:"이당류와 분해효소",d:"설탕은 인버타아제, 맥아당은 말타아제, 유당은 락타아제가 단당류로 분해한다."},
+  {t:"상대적 감미도",d:"설탕을 100으로 두고 단맛을 비교한 값. 과당(175)이 가장 달고 유당(16)이 가장 덜 달다."},
+  {t:"영양소의 기본 단위",d:"탄수화물=포도당, 단백질=아미노산, 지방=지방산+글리세린."},
+  {t:"3대 영양소 분해효소",d:"탄수화물은 아밀라아제, 단백질은 프로테아제, 지방은 리파아제가 분해한다."},
+  {t:"밀가루 단백질 함량",d:"강력분 11.5~13%(빵), 중력분 9~11%, 박력분 7~9%(과자). 많을수록 글루텐이 강하다."},
+  {t:"글루텐 구성 단백질",d:"글리아딘(36%)이 잘 늘어나는 신장성, 글루테닌(20%)이 탄력을 담당한다."},
+  {t:"밀가루 종류 vs 등급",d:"종류(강·중·박력)는 단백질 함량으로, 등급은 회분(껍질 성분) 함량으로 나눈다."},
+  {t:"주요 온도 — 60도와 74도",d:"이스트는 60도에서 죽고 전분도 60도부터 호화되며, 단백질은 74도에서 변성된다."},
+  {t:"이스트 특성",d:"생이스트 수분 약 70%, 생:건조=2:1로 대체. 락타아제가 없어 유당은 분해 못 한다."},
+  {t:"제빵에 적합한 물 — 아경수(120~180ppm)",d:"너무 무르지도 세지도 않은 물이 발효와 글루텐에 알맞다. 경도 기준은 탄산칼슘 함량."},
+  {t:"소금과 설탕의 작용",d:"소금은 반죽을 단단하게(경화), 설탕은 부드럽게(연화) 한다."},
+  {t:"베이킹파우더 구성",d:"중조(소다)+산작용제+분산제로 이루어진 화학 팽창제."},
+  {t:"초콜릿 구성",d:"코코아 62.5%(5/8)와 카카오버터 37.5%(3/8)로 본다."},
+  {t:"안정제(겔화제)",d:"한천은 우뭇가사리, 젤라틴은 동물 콜라겐, 펙틴은 과일 세포벽에서 얻는다."},
+  {t:"버터와 쇼트닝의 수분",d:"버터는 수분 14~17%·유지방 80%, 쇼트닝은 수분 0%·지방 100%."},
+  {t:"산패와 안정성",d:"산패는 유지가 산소와 만나 상하는 것, 안정성은 그 산패에 견디는 능력."},
+  {t:"항산화제와 보조제",d:"비타민E·BHT·BHA가 항산화제, 비타민C·구연산은 항산화를 돕는 보조제."},
+  {t:"유제품 가공",d:"전지분유는 수분만, 탈지분유는 수분+지방을 뺀 분말. 치즈는 레닌으로 카세인을 응고시킨 것."},
+  {t:"요오드값과 유지 분류",d:"불포화도가 높을수록 큰 값. 100 이하 불건성유, 100~130 반건성유, 130 이상 건성유."},
+  {t:"전화당",d:"설탕을 분해해 포도당과 과당이 같은 양으로 섞인 당."},
+  {t:"단백질 질소 계수",d:"질소량에 계수를 곱해 단백질량을 구한다. 일반 식품 6.25, 밀가루는 5.7."}
+ ]},
+ {h:"영양학",p:[
+  {t:"열량 영양소",d:"에너지를 내는 탄수화물·단백질·지방. 비타민·무기질은 몸을 조절하는 역할."},
+  {t:"1g당 열량",d:"탄수화물 4kcal, 단백질 4kcal, 지방 9kcal. 지방이 가장 높다."},
+  {t:"1일 섭취 권장 비율",d:"탄수화물 55~70%, 단백질 7~20%, 지방 15~20%."},
+  {t:"필수 지방산",d:"몸에서 못 만들어 꼭 먹어야 하는 리놀레산·리놀렌산·아라키돈산."},
+  {t:"필수 아미노산",d:"체내 합성이 안 되는 8종. 유아는 히스티딘·아르기닌이 추가로 필요하다."},
+  {t:"완전·불완전 단백질",d:"필수 아미노산을 고루 갖추면 완전(카세인 등), 부족하면 불완전(옥수수 제인)."},
+  {t:"혈당과 인슐린",d:"혈당을 낮추는 호르몬은 인슐린."},
+  {t:"지용성 비타민 결핍",d:"A=야맹증, D=구루병, E=항산화 역할, K=혈액 응고."},
+  {t:"수용성 비타민 결핍",d:"C=괴혈병, B1=각기병, B2=구강염, B3(니아신)=펠라그라, B6=신경염, 엽산=빈혈."},
+  {t:"주요 무기질",d:"칼슘=뼈·치아, 철=헤모글로빈, 염소=삼투압 조절, 마그네슘 결핍=경련."},
+  {t:"타액 효소·질소 계수",d:"침 속 소화효소는 프티알린. 단백질 질소 계수는 6.25(밀가루 5.7)."}
+ ]},
+ {h:"식품위생학",p:[
+  {t:"식품위생의 대상",d:"식품·식품첨가물·기구·용기·포장이 위생 관리 대상이다."},
+  {t:"HACCP",d:"위해요소를 미리 분석하고 중요관리점을 정해 관리하는 식품안전 체계."},
+  {t:"변질의 종류",d:"부패=단백질, 변패=탄수화물·지방, 산패=지방이 산소와 결합해 상하는 것."},
+  {t:"주요 소독제",d:"역성비누는 손·식기, 석탄산 3%는 소독력의 표준, 크레졸은 석탄산의 2배."},
+  {t:"중금속 중독",d:"카드뮴=이타이이타이병(골연화), 수은=미나마타병(신경)."},
+  {t:"대장균과 빵곰팡이",d:"대장균은 분변 오염의 지표균, 빵곰팡이는 리조푸스속."},
+  {t:"기생충 감염원",d:"무구조충=소고기, 유구조충=돼지고기 생식. 간디스토마는 민물고기, 폐디스토마는 민물게."},
+  {t:"독소형 식중독",d:"균이 만든 독소가 원인. 보툴리누스=뉴로톡신(치명적), 포도상구균=엔테로톡신(열에 강함)."},
+  {t:"감염형 식중독",d:"균 자체가 증식해 발병. 살모넬라, 장염비브리오(호염성), 병원성 대장균."},
+  {t:"동물성 자연독",d:"복어=테트로도톡신, 모시조개·굴=베네루핀, 섭조개·대합=삭시톡신."},
+  {t:"식물성 자연독",d:"감자싹=솔라닌, 독버섯=무스카린, 청매·살구씨=아미그달린, 독미나리=시큐톡신, 목화씨유=고시폴."},
+  {t:"유해 화학물질",d:"유해 착색료 아우라민(황)·로다민B(핑크), 메탄올은 실명을 일으킨다."},
+  {t:"보존료·소포제",d:"제과·제빵 보존료는 프로피온산, 제조 중 거품 제거는 소포제."}
+ ]}
+];
+const STUDY={
+"제과기능사":[
+ {h:"제과 일반·기기",p:[
+  {t:"생산관리·원가 3대 요소",d:"생산관리는 사람·재료·자금, 원가는 재료비·제조경비·노무비."},
+  {t:"쿠키 퍼짐·유지 안정성",d:"쿠키 퍼짐은 설탕이 좌우하고, 유지가 산패에 견디는 성질을 안정성이라 한다."},
+  {t:"수직형(버티컬) 믹서",d:"빵·케이크 반죽을 모두 돌릴 수 있어 소규모 제과점에서 많이 쓴다."},
+  {t:"오븐 종류",d:"데크(소규모), 터널식(대량생산·입구 출구 다름), 컨벡션(열풍 강제순환)."},
+  {t:"냉과자(냉 과자류)",d:"굽지 않고 차갑게 굳히는 과자 — 무스·푸딩·젤리·블라망제·바바루아."}
+ ]},
+ {h:"계란과 케이크 반죽법",p:[
+  {t:"계란 구성비",d:"껍질 10% : 노른자 30% : 흰자 60%."},
+  {t:"계란 수분 함량",d:"전란 75%, 노른자 50%, 흰자 88%(흰자는 우유와 같은 수분)."},
+  {t:"거품형·반죽형 필수 재료",d:"거품형은 밀가루·설탕·소금·계란, 반죽형은 여기에 고체유지가 더해진다."},
+  {t:"거품형 제법",d:"공립법은 전란을 함께, 별립법은 흰자·노른자를 따로 거품 낸다."},
+  {t:"공립법 온도",d:"더운 믹싱(가온법) 43도, 찬 믹싱(일반법) 22~24도."},
+  {t:"반죽형 제법",d:"크림법(부피감), 블렌딩법(유연감·비터), 설탕물법(2:1·균일한 색), 1단계법(한 번에 혼합)."},
+  {t:"제누와즈법",d:"스펀지의 일종으로 유지를 가장 마지막에 넣는다."},
+  {t:"시퐁법",d:"거품(물리적)과 팽창제(화학적)를 함께 써서 부풀린다."}
+ ]},
+ {h:"공정·고율배합",p:[
+  {t:"비중",d:"반죽 무게를 같은 부피 물 무게로 나눈 값. 작을수록 반죽에 공기가 많다."},
+  {t:"중간 발효",d:"둥글리기 후 잠깐 쉬게 하는 단계. 오버헤드 프루퍼·벤치 타임이라고도 한다."},
+  {t:"성형 기계",d:"분할기(나누기)→라운더(둥글리기)→정형기(모양). 파이롤러는 반죽을 얇게 민다."},
+  {t:"고율배합 vs 저율배합",d:"가루보다 설탕이 많으면 고율배합 — 저온 장시간(오버베이킹). 반대는 고온 단시간(언더베이킹)."},
+  {t:"베이커스 퍼센트",d:"밀가루를 100%로 두고 다른 재료의 비율을 나타내는 방식."}
+ ]},
+ {h:"페이스트리·튀김·도넛",p:[
+  {t:"퍼프 페이스트리",d:"반죽 온도 18~20도, 신장성이 필요해 강력분을 쓴다."},
+  {t:"페이스트리 유지 성질",d:"잘 펴지고 모양을 유지하는 가소성·신장성이 가장 중요하다."},
+  {t:"퍼짐과 결",d:"쿠키 퍼짐은 설탕 입자 크기, 파이 결의 길이는 유지 입자 크기에 좌우된다."},
+  {t:"도넛 글레이즈·발한 방지",d:"글레이즈는 49도. 발한은 충분히 식힌 뒤 아이싱·설탕량 늘리기·수분 충분히 날리기로 막는다."},
+  {t:"산성 반죽 특징",d:"색이 밝고 단단하며 향이 옅고 부피가 작다."},
+  {t:"튀김 기름",d:"표준 온도 180~195도, 깊이 12~15cm. 4대 적은 열·물·공기·이물질."}
+ ]},
+ {h:"크림·머랭·쿠키·팬닝",p:[
+  {t:"가나슈",d:"초콜릿과 생크림을 1:1로 섞은 크림."},
+  {t:"이탈리안 머랭",d:"114~118도 시럽을 부어 만든 머랭으로 무스에 쓴다."},
+  {t:"쿠키 분류",d:"반죽형은 드롭(수분 최다)·스냅·쇼트브레드, 거품형은 머랭·스펀지(쿠키 중 수분 최다)."},
+  {t:"팬닝비와 비용적",d:"파운드 팬닝 70%·비용적 2.4, 스펀지 팬닝 60%·비용적 5.08㎤."},
+  {t:"스펀지 케이크 배합",d:"밀가루 100·설탕 166·소금 2·계란 166(%)."}
+ ]},
+ {h:"굽기·반응 온도·배합",p:[
+  {t:"푸딩·캐러멜화",d:"푸딩 팬닝 95%·중탕 160~170도, 캐러멜화는 160~180도에서 일어난다."},
+  {t:"굽는 중 오븐 열지 않기",d:"슈·퍼프 페이스트리는 팽창 중 오븐을 열면 주저앉는다."},
+  {t:"보존료·무팽창 제품",d:"보존료는 프로피온산. 페이스트리·일부 파이 껍질은 팽창제 없이 굽는 무팽창 제품."},
+  {t:"레이어 케이크 전란 공식",d:"레이어=쇼트닝×1.1, 화이트 레이어=쇼트닝×1.43."},
+  {t:"시폰·엔젤푸드 이형제",d:"팬에 들러붙지 않게 물을 이형제로 쓴다."},
+  {t:"케이크 pH",d:"엔젤푸드 5.2~6.2(산성), 데블스푸드 8.5~9.2(알칼리성)."},
+  {t:"파운드 노른자 칠 목적",d:"맛 개선·착색·광택·노화 방지를 위해 굽고 노른자를 칠한다."}
+ ]},
+ ...COMMON_STUDY
+],
+"제빵기능사":[
+ {h:"제빵 기본·발효",p:[
+  {t:"제빵 기본 재료",d:"밀가루·이스트·소금·물 네 가지가 빵의 필수 재료."},
+  {t:"비용적",d:"반죽 1g이 부푸는 부피. 산형 식빵 3.2~3.4, 풀먼 3.4~4.0㎤/g."},
+  {t:"1차 발효 조건",d:"온도 27도, 습도 75~80%에서 진행한다."},
+  {t:"펀치를 하는 이유",d:"산소를 넣어 이스트를 살리고, 반죽 온도를 고르게 하며, 발효를 앞당긴다."},
+  {t:"발효를 막는 양",d:"소금 1% 이상, 설탕 5% 이상이면 이스트 활동이 억제된다."},
+  {t:"발효 손실",d:"발효 중 수분·가스가 빠져 무게가 1~2% 줄어든다."},
+  {t:"스펀지도우법(중종법)",d:"스펀지(24도)와 본반죽(27도)으로 두 번 나눠 반죽하는 법."},
+  {t:"도우 컨디셔너",d:"냉동·냉장·해동·2차 발효를 자동으로 조절하는 기계."}
+ ]},
+ {h:"믹싱 6단계",p:[
+  {t:"믹싱 6단계 순서",d:"픽업→클린업→발전→최종→렛다운→브레이크다운."},
+  {t:"픽업 단계",d:"재료가 섞이며 물을 흡수(수화)하는 첫 단계."},
+  {t:"클린업 단계",d:"글루텐이 생기기 시작하며, 후염법에서 소금을 넣는 시점."},
+  {t:"발전 단계",d:"탄력이 최대가 되고 믹서에 가장 큰 힘이 든다(하스 브레드 완료점)."},
+  {t:"렛다운 단계",d:"탄력을 잃고 쭉 늘어나는 단계(잉글리시 머핀·햄버거 빵)."}
+ ]},
+ {h:"성형·팬닝·시험기계",p:[
+  {t:"성형 5단계",d:"분할→둥글리기→중간발효→정형→팬닝."},
+  {t:"팬닝 온도·팬닝량",d:"팬 온도 32도, 파운드 케이크 팬닝량 70%."},
+  {t:"팬오일 조건",d:"반죽의 0.1~0.2%만, 발연점은 높게, 산패 쉬운 지방산은 없어야 한다."},
+  {t:"기계 분할 윤활제",d:"반죽이 안 붙게 유동파라핀을 반죽량의 0.1% 쓴다."},
+  {t:"반죽 시험 기계",d:"아밀로그래프(전분 호화력), 익스텐소그래프(신장 저항), 패리노그래프(글루텐 흡수율·믹싱 시간)."}
+ ]},
+ {h:"굽기·냉각·포장",p:[
+  {t:"오븐 스프링",d:"49도에서 약 1/3 부풀고, 60도에서 멈추며 전분 호화·이스트 사멸이 일어난다."},
+  {t:"오버베이킹",d:"고율배합을 저온에서 오래 굽는 방식."},
+  {t:"냉각",d:"구운 빵은 35~40도로 식히며, 실온 자연 냉각은 3~4시간 걸린다."},
+  {t:"포장·방충망",d:"포장 용기는 방수성은 있고 통기성은 없어야 한다. 방충망은 30메시."},
+  {t:"정통 바게트 규격",d:"중량 350g, 길이 60cm."},
+  {t:"반죽 상태와 냄새",d:"어린 반죽(덜 발효)은 생 밀가루 냄새, 지친 반죽(과발효)은 신 냄새."},
+  {t:"흐름성",d:"반죽이 팬·용기 모양대로 퍼지는 성질."}
+ ]},
+ {h:"발효법·특수 반죽법",p:[
+  {t:"스펀지 발효 완료",d:"처음 부피의 4~5배, 핀홀(작은 구멍) 현상, 발효 3~4시간 반."},
+  {t:"액체 발효법(액종법)",d:"완충제로 분유·탄산칼슘을 쓰고 pH로 발효를 확인한다."},
+  {t:"냉동 반죽법",d:"1차 발효 0~20분, 급속 냉각 -40도, 저장 -18~20도."},
+  {t:"냉동 반죽 조치",d:"강력분 사용·이스트 2배·산화제 사용으로 냉동 손상을 보완한다."},
+  {t:"노타임 반죽법",d:"발효를 줄이는 대신 S-S 결합을 끊는 환원제 L-시스테인을 쓴다."}
+ ]},
+ ...COMMON_STUDY
+]
+};
+let studyExam="제과기능사";
+let practicalExam="제과기능사";
+
+/* ===== 실기 요약 ===== */
+const PRACTICAL={
+"제과기능사":[
+ {n:"초코머핀",s:"24℃",o:"180/160",t:"25±5분",tip:"초코칩 1/3은 토핑용으로 남겨두기"},
+ {n:"쇼트브레드쿠키",s:"-",o:"180/160",t:"10±3분",tip:"반죽 연화 주의(저온 유지), 포크 무늬 정교하게"},
+ {n:"파운드케이크",s:"0.8±0.05 / 23℃",o:"210/160→180/160",t:"15분→30분(약 45분)",tip:"충분한 크림화, 오븐 10분 후 중앙을 식용유로 절개"},
+ {n:"타르트",s:"20℃",o:"170/220",t:"20±5분",tip:"피케(구멍내기) 일정하게, 아몬드 크림 수평 유지"},
+ {n:"마데라컵케이크",s:"24℃",o:"180/160",t:"25±5분",tip:"적포도주 시럽은 굽기 직후 도포, 건포도 고르게 분산"},
+ {n:"버터쿠키",s:"22℃",o:"190/130",t:"10±2분",tip:"장미·S자 형태 일관성, 균일한 짜기 힘 조절"},
+ {n:"버터스펀지(별립)",s:"0.45±0.05 / 23℃",o:"170/160",t:"30±5분",tip:"머랭 80~90%, 노른자 반죽과 부드럽게 혼합"},
+ {n:"소프트롤케이크",s:"0.45±0.05 / 22℃",o:"180/160",t:"10±6분",tip:"식용유 유화 상태 확인, 말기 전 잼 균일하게 도포"},
+ {n:"다쿠와즈",s:"-",o:"200/160",t:"13±2분",tip:"머랭 100%, 슈가파우더 2회 충분히 도포"},
+ {n:"치즈케이크",s:"0.7±0.05 / 20℃",o:"210/150→150/150",t:"10±5분→30±5분",tip:"중탕 굽기(따뜻한 물), 머랭 70%로 윤기있게"},
+ {n:"젤리롤케이크",s:"0.5±0.05 / 23℃",o:"180/160",t:"10±5분",tip:"시트 파손 주의, 카라멜 색소 무늬 간격 유지"},
+ {n:"버터스펀지(공립)",s:"0.5±0.05 / 25℃",o:"170/160",t:"30±5분",tip:"계란 중탕 43℃ 준수, 거품 사멸 전 가루 혼합"},
+ {n:"초코롤케이크",s:"0.5±0.04 / 24℃",o:"200/160",t:"10±2분",tip:"코코아로 거품 사멸 주의, 가나슈 온도 약 40℃"},
+ {n:"흑미롤케이크",s:"0.45±0.05 / 25℃",o:"180/160",t:"15±3분",tip:"쌀가루 혼합은 신속하게, 시트 마르기 전 말기"},
+ {n:"마들렌",s:"24℃",o:"190/150",t:"10±2~3분",tip:"실온 휴지 20분 필수, 틀 버터 코팅 꼼꼼히"},
+ {n:"슈",s:"-",o:"190/180→180/150",t:"10분→15±5분",tip:"충분한 호화, 굽는 중 오븐 개방 절대 금지"},
+ {n:"브라우니",s:"27℃",o:"170/150",t:"35±5분",tip:"초콜릿·버터 중탕 온도 관리, 호두 전처리 확인"},
+ {n:"시폰케이크",s:"0.5±0.05 / 23℃",o:"180/160",t:"30±5분",tip:"비중 측정 신중, 굽기 후 반드시 뒤집어 식히기"},
+ {n:"과일케이크",s:"23℃",o:"180/160",t:"30±5분",tip:"과일 전처리(밀가루 묻히기), 충전물 가라앉음 방지"},
+ {n:"호두파이",s:"-",o:"170/180",t:"30±5~10분",tip:"필링 거품 제거 필수, 호두는 오븐에 미리 굽는 전처리"}
+],
+"제빵기능사":[
+ {n:"빵도넛",o:"180℃(튀김)",t:"-",w:"46g",tip:"발효 시간 엄수, 튀김 온도 180℃·색상 균일"},
+ {n:"소세지빵",o:"200/160",t:"10±5분",w:"낙엽 6개·꽃잎 6개",tip:"낙엽·꽃잎 성형 정밀하게, 토핑 소스 미관 중점"},
+ {n:"비상식빵",o:"170/190",t:"25±10분",w:"170g",tip:"믹싱 20~25% 연장, 1차 발효 단축(15~30분)"},
+ {n:"단팥빵",o:"180/150",t:"10±5분",w:"반죽 50g·팥 40g",tip:"앙금 포앙은 중앙에, 헤라로 정밀 성형"},
+ {n:"그리시니",o:"200/180",t:"15±5분",w:"30g",tip:"길이 35~40cm·두께 일정, 과도한 덧가루 지양"},
+ {n:"밤식빵",o:"160/190",t:"30±10분",w:"450g",tip:"토핑 소스 굵기 일정, 밤 충전물 고르게 분산"},
+ {n:"베이글",o:"210/160",t:"15±5분",w:"80g",tip:"데치기(물 90℃) 공정, 이음매 안 보이게 성형"},
+ {n:"스위트롤",o:"190/130",t:"12±3분",w:"야자잎형 12개·세잎새형 9개",tip:"시나몬 설탕 누출 방지, 재단 시 단면 찌그러짐 주의"},
+ {n:"우유식빵",o:"170/180→150/180",t:"15분→15±5분",w:"180g",tip:"3봉 높이 균형, 표면 기포 제거 및 둥글리기"},
+ {n:"단과자빵(트위스트)",o:"200/160",t:"7±3분",w:"50g (8자 12개·달팽이 12개)",tip:"8자·달팽이형 대칭, 꼬임 간격 일정하게"},
+ {n:"크림빵",o:"190/150",t:"12±3분",w:"충전 12개·비충전 12개",tip:"반달·원형 대칭, 커스터드 누설 방지"},
+ {n:"풀먼식빵",o:"180/180",t:"30±10분",w:"250g",tip:"뚜껑 닫기 전 80~90% 발효, 모서리 직각"},
+ {n:"소보로빵",o:"200/160",t:"10±3분",w:"50g",tip:"소보로 가루 균일하게 듬뿍, 일정한 압력"},
+ {n:"통밀빵",o:"190/160",t:"15±5분",w:"8개",tip:"통밀 거친 식감 고려, 쿠프(칼집) 깊이 일정"},
+ {n:"호밀빵",o:"200/200→180/180",t:"10분→15분",w:"330g",tip:"낮은 반죽 온도 준수, 럭비공 형태 깔끔하게"},
+ {n:"버터톱식빵",o:"170/190",t:"25±10분",w:"460g",tip:"버터 배합 높음 → 믹싱 최종 단계 확인 철저"},
+ {n:"옥수수식빵",o:"160/190",t:"30±10분",w:"180g",tip:"옥수수가루 흡수율 고려, 3봉형 균형 잡힌 부피"},
+ {n:"모카빵",o:"190/160",t:"20±10분",w:"250g",tip:"비스킷 반죽 두께 0.3cm, 균일한 터짐 유도"},
+ {n:"버터롤",o:"200/160",t:"10±4~6분",w:"50g × 24개",tip:"올챙이형 성형, 3단 겹침 무늬 선명하게"},
+ {n:"쌀식빵",o:"160/190",t:"20±10분",w:"190g",tip:"글루텐 형성 확인, 발효 시 부피 변화에 신속 대응"}
+]
+};
+
+/* ===== 유틸 ===== */
+function shuffle(arr){const a=arr.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function shuffle(arr){const a=arr.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+let state=null,timerInt=null;
+
+function selectExam(el,name){document.querySelectorAll('.examcard').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');state=state||{};state.examType=name;}
+
+/* ===== 시작 ===== */
+function startExam(){
+  const examType=(state&&state.examType);
+  const name=document.getElementById('inName').value.trim();
+  const phone=document.getElementById('inPhone').value.trim();
+  if(!examType){alert('제과기능사 또는 제빵기능사를 선택해 주세요.');return;}
+  if(!name){alert('이름을 입력해 주세요.');document.getElementById('inName').focus();return;}
+  if(!/^\d{4}$/.test(phone)){alert('휴대폰 뒷 4자리를 숫자로 입력해 주세요.');document.getElementById('inPhone').focus();return;}
+  const shuffleQ=document.getElementById('optShuffleQ').checked;
+  const shuffleC=document.getElementById('optShuffleC').checked;
+  const useTimer=document.getElementById('optTimer').checked;
+
+  let questions=[];
+  SUBJECTS[examType].forEach(sub=>{
+    const need=DRAW[examType][sub];
+    let pool=shuffle(BANK[sub]||[]).slice(0,Math.min(need,(BANK[sub]||[]).length));
+    pool.forEach(o=>{
+      let pairs=o.c.map((txt,i)=>({txt,correct:i===o.a}));
+      if(shuffleC) pairs=shuffle(pairs);
+      questions.push({subject:sub,q:o.q,ex:o.ex,choices:pairs.map(p=>p.txt),answer:pairs.findIndex(p=>p.correct)});
+    });
+  });
+  if(shuffleQ) questions=shuffle(questions);
+
+  state={examType,name,phone,useTimer,questions,
+    answers:new Array(questions.length).fill(null),
+    flags:new Array(questions.length).fill(false),cur:0,remaining:60*60};
+  logAccess(name,phone,examType);
+  document.getElementById('home').classList.add('hidden');
+  document.getElementById('exam').classList.remove('hidden');
+  buildGrid();renderQ();
+  if(useTimer) startTimer(); else document.getElementById('timer').textContent='∞';
+}
+function startTimer(){updateTimer();timerInt=setInterval(()=>{state.remaining--;updateTimer();if(state.remaining<=0){clearInterval(timerInt);submitExam(true);}},1000);}
+function updateTimer(){const m=String(Math.floor(state.remaining/60)).padStart(2,'0');const s=String(state.remaining%60).padStart(2,'0');const t=document.getElementById('timer');t.textContent=`${m}:${s}`;t.classList.toggle('warn',state.remaining<=60);}
+
+/* ===== 렌더 ===== */
+function renderQ(){
+  const q=state.questions[state.cur];
+  document.getElementById('qSubject').textContent=q.subject;
+  document.getElementById('qNo').textContent=`${state.cur+1}번`;
+  document.getElementById('qText').textContent=q.q;
+  const box=document.getElementById('choices');box.innerHTML='';
+  const nums=['①','②','③','④'];
+  q.choices.forEach((txt,i)=>{
+    const b=document.createElement('button');
+    b.className='choice'+(state.answers[state.cur]===i?' sel':'');
+    b.innerHTML=`<span class="num">${nums[i]}</span><span>${txt}</span>`;
+    b.onclick=()=>{state.answers[state.cur]=i;renderQ();refreshGrid();updateProgress();};
+    box.appendChild(b);
+  });
+  document.getElementById('flagBox').checked=state.flags[state.cur];
+  refreshGrid();updateProgress();
+}
+function go(d){const n=state.cur+d;if(n<0||n>=state.questions.length)return;state.cur=n;renderQ();}
+function toggleFlag(){state.flags[state.cur]=document.getElementById('flagBox').checked;refreshGrid();}
+function buildGrid(){const g=document.getElementById('grid');g.innerHTML='';state.questions.forEach((_,i)=>{const b=document.createElement('button');b.textContent=i+1;b.onclick=()=>{state.cur=i;renderQ();};g.appendChild(b);});refreshGrid();}
+function refreshGrid(){[...document.getElementById('grid').children].forEach((b,i)=>{b.className='';if(state.answers[i]!==null)b.classList.add('done');if(state.flags[i])b.classList.add('flag');if(i===state.cur)b.classList.add('cur');});}
+function updateProgress(){const done=state.answers.filter(a=>a!==null).length;const total=state.questions.length;document.getElementById('progFill').style.width=(done/total*100)+'%';document.getElementById('progLab').textContent=`${done} / ${total}`;document.getElementById('answeredCount').textContent=`${done}문항 응답 / 총 ${total}문항`;}
+
+/* ===== 채점 ===== */
+function confirmSubmit(){const blank=state.answers.filter(a=>a===null).length;let msg='시험을 제출할까요?';if(blank>0)msg=`아직 ${blank}문항이 비어 있습니다. 그래도 제출할까요?`;if(confirm(msg))submitExam(false);}
+function submitExam(auto){
+  if(timerInt)clearInterval(timerInt);
+  const total=state.questions.length;let correct=0;const perSub={};
+  SUBJECTS[state.examType].forEach(s=>perSub[s]={c:0,t:0});
+  state.questions.forEach((q,i)=>{perSub[q.subject].t++;if(state.answers[i]===q.answer){correct++;perSub[q.subject].c++;}});
+  const score=Math.round(correct/total*100);const pass=(correct/total)>=0.6;
+  state.result={correct,total,score,pass,perSub,auto};
+  showResult();
+}
+function showResult(){
+  const r=state.result;
+  ['home','exam','review','check'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+  document.getElementById('result').classList.remove('hidden');
+  const stamp=document.getElementById('stamp');
+  stamp.textContent=r.pass?'합격':'불합격';stamp.className='stamp '+(r.pass?'pass':'fail');
+  document.getElementById('scoreNum').textContent=r.score;
+  document.getElementById('resultLine').textContent=`${state.examType} · ${state.name}님 · 맞은 문항 ${r.correct} / ${r.total}`+(r.auto?' (시간 종료)':'');
+  const st=document.getElementById('subtable');st.innerHTML='';
+  SUBJECTS[state.examType].forEach(s=>{const o=r.perSub[s];const pct=o.t?Math.round(o.c/o.t*100):0;
+    st.innerHTML+=`<div class="subrow"><span class="nm">${s}</span><span style="display:flex;align-items:center;gap:12px"><span class="minibar"><i style="width:${pct}%"></i></span><span class="sc">${o.c}/${o.t}</span></span></div>`;});
+}
+function showReview(){
+  document.getElementById('result').classList.add('hidden');
+  document.getElementById('review').classList.remove('hidden');
+  if(state.reviewAll===undefined) state.reviewAll=true;
+  renderReview();
+}
+function renderReview(){
+  const list=document.getElementById('revList');list.innerHTML='';const nums=['①','②','③','④'];
+  const all=state.reviewAll;
+  list.innerHTML=`<div class="navrow" style="margin-top:0;margin-bottom:14px">
+    <button class="btn ${all?'':'gray'} sm" onclick="setReview(true)">전체 정답 보기</button>
+    <button class="btn ${all?'gray':''} sm" onclick="setReview(false)">틀린 문제만</button></div>`;
+  let shown=0;
+  state.questions.forEach((q,i)=>{
+    const isWrong=state.answers[i]!==q.answer;
+    if(!all && !isWrong) return;
+    shown++;
+    const mark=isWrong?'❌':'✅';
+    let html=`<div class="rev"><div class="q">${mark} ${i+1}. [${q.subject}] ${q.q}</div>`;
+    q.choices.forEach((txt,ci)=>{let cls='c';let badge='';
+      if(ci===q.answer){cls+=' correct';badge='<span class="badge" style="color:var(--ok)">정답</span>';}
+      else if(ci===state.answers[i]){cls+=' wrong';badge='<span class="badge" style="color:var(--bad)">내 답</span>';}
+      html+=`<div class="${cls}"><span>${nums[ci]}</span><span>${txt}</span>${badge}</div>`;});
+    if(q.ex)html+=`<div class="ex">💡 ${q.ex}</div>`;html+='</div>';list.innerHTML+=html;
+  });
+  if(shown===0)list.innerHTML+='<div class="center" style="padding:30px">🎉 틀린 문제가 없습니다. 만점이에요!</div>';
+}
+function setReview(all){state.reviewAll=all;renderReview();window.scrollTo({top:0,behavior:'smooth'});}
+
+/* ===== 문제 검토 (선생님용) ===== */
+function showCheck(){
+  ['home'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+  document.getElementById('check').classList.remove('hidden');
+  const body=document.getElementById('checkBody');body.innerHTML='';const nums=['①','②','③','④'];
+  let n=0;
+  Object.keys(BANK).forEach(sub=>{
+    body.innerHTML+=`<div class="subhead">${sub} · ${BANK[sub].length}문항</div>`;
+    BANK[sub].forEach(o=>{
+      n++;
+      let html=`<div class="rev"><div class="q">${n}. ${o.q}</div>`;
+      o.c.forEach((txt,ci)=>{let cls='c';let badge='';
+        if(ci===o.a){cls+=' correct';badge='<span class="badge" style="color:var(--ok)">정답</span>';}
+        html+=`<div class="${cls}"><span>${nums[ci]}</span><span>${txt}</span>${badge}</div>`;});
+      if(o.ex)html+=`<div class="ex">💡 ${o.ex}</div>`;html+='</div>';body.innerHTML+=html;
+    });
+  });
+}
+function goHome(){if(timerInt)clearInterval(timerInt);['exam','result','review','check','study','practical'].forEach(id=>document.getElementById(id).classList.add('hidden'));document.getElementById('home').classList.remove('hidden');document.querySelectorAll('.examcard').forEach(c=>c.classList.remove('sel'));state=null;}
+
+/* ===== 요점정리(학습) ===== */
+function showStudy(){
+  ['home'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+  document.getElementById('study').classList.remove('hidden');
+  setStudy(studyExam);
+}
+function setStudy(exam){
+  studyExam=exam;
+  document.getElementById('tab제과기능사').classList.toggle('active',exam==='제과기능사');
+  document.getElementById('tab제빵기능사').classList.toggle('active',exam==='제빵기능사');
+  const body=document.getElementById('studyBody');body.innerHTML='';
+  STUDY[exam].forEach(sec=>{
+    let html=`<div class="subhead">${sec.h}</div><div class="studycard"><ul>`;
+    sec.p.forEach(pt=>{html+=`<li><b>${pt.t}</b><span class="d">${pt.d}</span></li>`;});
+    html+='</ul></div>';
+    body.innerHTML+=html;
+  });
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ===== 접속 비밀번호 ===== */
+function enterApp(){
+  const v=document.getElementById('inAccess').value;
+  if(v===ACCESS_PASSWORD){
+    document.getElementById('gate').classList.add('hidden');
+    document.getElementById('home').classList.remove('hidden');
+  }else{
+    alert('비밀번호가 올바르지 않습니다.');
+    document.getElementById('inAccess').value='';
+    document.getElementById('inAccess').focus();
+  }
+}
+
+/* ===== 구글 시트 기록 (이름·전화번호 뒷자리) ===== */
+function logAccess(name,phone,exam){
+  if(!GAS_URL) return; // 연동 주소가 없으면 아무것도 하지 않음
+  try{
+    fetch(GAS_URL,{method:'POST',mode:'no-cors',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({name,phone,exam,time:new Date().toISOString()})});
+  }catch(e){/* 기록 실패는 시험에 영향 주지 않음 */}
+}
+
+/* ===== 요점정리 인쇄 ===== */
+function printStudy(){ window.print(); }
+
+/* ===== 실기 요약 ===== */
+function showPractical(){
+  ['home'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+  document.getElementById('practical').classList.remove('hidden');
+  setPractical(practicalExam);
+}
+function setPractical(exam){
+  practicalExam=exam;
+  document.getElementById('ptab제과기능사').classList.toggle('active',exam==='제과기능사');
+  document.getElementById('ptab제빵기능사').classList.toggle('active',exam==='제빵기능사');
+  const body=document.getElementById('practicalBody');
+  const rows=PRACTICAL[exam];
+  let head,cells;
+  if(exam==='제과기능사'){
+    head='<tr><th>제품</th><th>비중/온도</th><th>오븐(위/아래)</th><th>굽는시간</th><th>주의사항·핵심팁</th></tr>';
+    cells=rows.map(r=>`<tr><td class="nm">${r.n}</td><td>${r.s}</td><td>${r.o}</td><td>${r.t}</td><td class="tip">${r.tip}</td></tr>`).join('');
+  }else{
+    head='<tr><th>제품명</th><th>오븐(위/아래)</th><th>굽는시간</th><th>분할무게</th><th>주의사항·핵심팁</th></tr>';
+    cells=rows.map(r=>`<tr><td class="nm">${r.n}</td><td>${r.o}</td><td>${r.t}</td><td>${r.w}</td><td class="tip">${r.tip}</td></tr>`).join('');
+  }
+  body.innerHTML=`<div class="pscroll"><table class="ptable"><thead>${head}</thead><tbody>${cells}</tbody></table></div>`;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ===== 방문 횟수 ===== */
+async function bumpVisits(){
+  let count=null;
+  try{
+    if(window.storage){
+      let g=null; try{g=await window.storage.get('visit_count',true);}catch(e){}
+      count=(g&&g.value)?(parseInt(g.value)||0):0;
+      count++;
+      await window.storage.set('visit_count',String(count),true);
+    }
+  }catch(e){count=null;}
+  if(count===null){
+    try{
+      count=(parseInt(localStorage.getItem('visit_count'))||0)+1;
+      localStorage.setItem('visit_count',String(count));
+    }catch(e){count=null;}
+  }
+  const el=document.getElementById('visitCount');
+  if(el) el.textContent=(count===null?'-':count.toLocaleString());
+}
+window.addEventListener('load',bumpVisits);
+</script>
+</body>
+</html>
