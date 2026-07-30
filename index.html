@@ -117,6 +117,7 @@
   .center{text-align:center;}
   .mt{margin-top:16px;}
   .small{font-size:13px;color:var(--ink-soft);}
+  .copyright{text-align:center;font-size:11px;color:var(--ink-soft);line-height:1.6;margin-top:30px;padding-top:16px;border-top:1px solid var(--line);opacity:.85;}
   .tabs{display:flex;gap:8px;margin-bottom:16px;}
   .tab{flex:1;padding:12px;border:1px solid var(--line);background:var(--card);border-radius:11px;
     font-family:inherit;font-size:15px;font-weight:600;color:var(--ink-soft);cursor:pointer;transition:.13s;}
@@ -165,11 +166,11 @@
     <div class="center small" style="margin-top:18px;color:var(--ink-soft)">
       👣 누적 방문 <b id="visitCount" style="color:var(--accent-dark)">-</b>회
     </div>
-    <div class="copyright" style="text-align:center">
+    <div class="copyright">
       본 자료는 퍼스트바리스타제과제빵화성의 교육용 자료입니다.<br>
       무단 복제·배포·외부 공유를 금합니다. 위반 시 관련 법령에 따라 신고 및 법적 조치가 이루어질 수 있습니다.<br>
       © 2026 퍼스트바리스타제과제빵화성. All rights reserved.
-      </div>
+    </div>
   </section>
 
   <!-- HOME -->
@@ -201,13 +202,13 @@
       <label><input type="checkbox" id="optTimer" checked> 제한시간 사용(60분)</label>
     </div>
     <button class="btn" onclick="startExam()">시험 시작하기</button>
-    <button class="btn ghost mt" onclick="showStudy()">필기요점정리(제과/제빵)</button>
-    <button class="btn ghost mt" onclick="showPractical()">실기요점정리(제과/제빵)</button>
-    <button class="btn ghost mt" onclick="showCheck()">문제 검토 (선생님용)</button>
-      <div class="info"><b>안내</b> · 이름과 휴대폰 뒷 4자리만 입력하면 바로 응시합니다.
+    <button class="btn ghost mt" onclick="showStudy()">📖 요점정리 (학습)</button>
+    <button class="btn ghost mt" onclick="showPractical()">🧑‍🍳 실기 요약 (제품별)</button>
+    <button class="btn ghost mt" onclick="showCheck()">📋 문제 검토 (선생님용)</button>
+    <div class="info"><b>안내</b> · 이름과 휴대폰 뒷 4자리만 입력하면 바로 응시합니다.
       매 시험마다 과목별로 문제가 무작위 출제됩니다. 오답 보기는 자동 생성된 것이라
       <b>문제 검토</b> 화면에서 한 번 확인해 주세요.</div>
-    <div class="copyright" style="text-align:center">
+    <div class="copyright">
       본 자료는 퍼스트바리스타제과제빵화성의 교육용 자료입니다.<br>
       무단 복제·배포·외부 공유를 금합니다. 위반 시 관련 법령에 따라 신고 및 법적 조치가 이루어질 수 있습니다.<br>
       © 2026 퍼스트바리스타제과제빵화성. All rights reserved.
@@ -305,7 +306,7 @@
 
 <script>
 /* ===== 학원 설정 (여기 두 줄만 바꿔 쓰세요) ===== */
-const ACCESS_PASSWORD = "03180772432";   // 접속 비밀번호
+const ACCESS_PASSWORD = "bakery2026";   // 접속 비밀번호
 const GAS_URL = "https://script.google.com/macros/s/AKfycbwtzzCTyDQK7SoGuJEzL8tkBf3Ft304Znk63vrzkp1p8opYVjuRlKdpPppKfbZI71pO/exec";                      // 구글 시트 연동 주소 (Apps Script 배포 URL). 비워두면 기록 안 함.
 
 /* ===== 과목 구성 ===== */
@@ -736,7 +737,6 @@ function startExam(){
   state={examType,name,phone,useTimer,questions,
     answers:new Array(questions.length).fill(null),
     flags:new Array(questions.length).fill(false),cur:0,remaining:60*60};
-  logAccess(name,phone,examType);
   document.getElementById('home').classList.add('hidden');
   document.getElementById('exam').classList.remove('hidden');
   pushScreen();
@@ -779,6 +779,7 @@ function submitExam(auto){
   state.questions.forEach((q,i)=>{perSub[q.subject].t++;if(state.answers[i]===q.answer){correct++;perSub[q.subject].c++;}});
   const score=Math.round(correct/total*100);const pass=(correct/total)>=0.6;
   state.result={correct,total,score,pass,perSub,auto};
+  logResult(state.name,state.phone,state.examType,score,pass);
   showResult();
 }
 function showResult(){
@@ -880,12 +881,12 @@ function enterApp(){
 }
 
 /* ===== 구글 시트 기록 (이름·전화번호 뒷자리) ===== */
-function logAccess(name,phone,exam){
+function logResult(name,phone,exam,score,pass){
   if(!GAS_URL) return; // 연동 주소가 없으면 아무것도 하지 않음
   try{
     fetch(GAS_URL,{method:'POST',mode:'no-cors',
       headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body:JSON.stringify({name,phone,exam,time:new Date().toISOString()})});
+      body:JSON.stringify({name,phone,exam,score,pass:(pass?'합격':'불합격'),time:new Date().toISOString()})});
   }catch(e){/* 기록 실패는 시험에 영향 주지 않음 */}
 }
 
